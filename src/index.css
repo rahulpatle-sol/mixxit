@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brown: #4b2e1a;
+  --color-orange: #fc7305;
+  --color-green: #63920e;
+  --color-tan: #e1ac6e;
+  --color-cream: #fdfaf5;
+  --color-paper: #ffffff;
+
+  --font-display: "DM Sans", system-ui, sans-serif;
+  --font-script: "Kaushan Script", cursive;
+  --font-sans: "DM Sans", system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-brown);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-orange);
+  outline-offset: 3px;
+}
+
+.will-change-transform {
+  will-change: transform;
+}
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis.smooth,
+html.lenis.smooth body {
+  overflow: hidden !important;
+}
+html.lenis body,
+html.lenis.smooth body {
+  overflow: visible !important;
+}
