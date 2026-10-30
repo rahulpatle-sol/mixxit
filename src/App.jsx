@@ -3,10 +3,10 @@ import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "./gsap";
 import { StoreProvider } from "./store";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Story from "./components/Story";
-import Marquee from "./components/Marquee";
-import Products from "./components/Products";
+import Stage from "./components/Stage";
+import ShopSection from "./components/ShopSection";
+import FruitSection from "./components/FruitSection";
+import StoryReveal from "./components/StoryReveal";
 import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
 import SearchOverlay from "./components/SearchOverlay";
@@ -15,12 +15,13 @@ import LoginModal from "./components/LoginModal";
 export default function App() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis();
+    const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.8 });
     window.__lenis = lenis;
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (t) => lenis.raf(t * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
+    ScrollTrigger.refresh();
     return () => {
       gsap.ticker.remove(tick);
       lenis.destroy();
@@ -32,10 +33,10 @@ export default function App() {
     <StoreProvider>
       <Navbar />
       <main>
-        <Hero />
-        <Story />
-        <Marquee />
-        <Products />
+        <Stage />
+        <ShopSection />
+        <FruitSection />
+        <StoryReveal />
       </main>
       <Footer />
       <CartDrawer />

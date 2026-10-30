@@ -1,33 +1,61 @@
 import { Search, ShoppingBag, User } from "lucide-react";
 import { motion } from "motion/react";
+import { ASSETS } from "../assets";
 import { scrollTo, useStore } from "../store";
 
-const iconBtn =
+const iconButton =
   "relative grid h-11 w-11 place-items-center rounded-full border-2 border-brown bg-white transition-colors hover:bg-orange hover:text-white";
 
 export default function Navbar() {
   const { count, setPanel } = useStore();
+
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 md:px-10 bg-white/80 backdrop-blur-sm border-b border-brown/20">
-      <button onClick={() => scrollTo("body")} className="font-script text-3xl md:text-4xl leading-none text-brown" aria-label="Mixxit home">
-        Mixxit
+    <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-brown/20 bg-white/90 px-5 py-3 backdrop-blur-sm md:px-10">
+      <button
+        onClick={() => scrollTo("body")}
+        aria-label="Mixxit home"
+        className="flex items-center"
+      >
+        <img
+          src={ASSETS.logo}
+          alt=""
+          className="h-10 w-auto max-w-[130px] object-contain md:h-11"
+        />
       </button>
-      <nav className="hidden gap-8 md:flex">
-        <button onClick={() => scrollTo("#story")} className="font-bold text-brown hover:text-orange">
+      <nav aria-label="Main navigation" className="hidden gap-8 md:flex">
+        <button
+          onClick={() => scrollTo("#story-reveal")}
+          className="font-bold text-brown transition-colors hover:text-orange"
+        >
           Our story
         </button>
-        <button onClick={() => scrollTo("#shop")} className="font-bold text-brown hover:text-orange">
+        <button
+          onClick={() => scrollTo("#shop")}
+          className="font-bold text-brown transition-colors hover:text-orange"
+        >
           Shop
         </button>
       </nav>
       <div className="flex gap-2">
-        <button className={iconBtn} onClick={() => setPanel("search")} aria-label="Search products">
+        <button
+          className={iconButton}
+          onClick={() => setPanel("search")}
+          aria-label="Search products"
+        >
           <Search size={20} />
         </button>
-        <button className={iconBtn} onClick={() => setPanel("login")} aria-label="Log in">
+        <button
+          className={iconButton}
+          onClick={() => setPanel("login")}
+          aria-label="Log in"
+        >
           <User size={20} />
         </button>
-        <button className={iconBtn} onClick={() => setPanel("cart")} aria-label={`Cart, ${count} items`}>
+        <button
+          className={iconButton}
+          onClick={() => setPanel("cart")}
+          aria-label={`Cart, ${count} items`}
+        >
           <ShoppingBag size={20} />
           {count > 0 && (
             <motion.span

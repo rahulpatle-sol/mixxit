@@ -1,390 +1,533 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, DESKTOP, MOBILE, REDUCED } from "../gsap";
 import { products, colorById } from "../data";
+import { ASSETS } from "../assets";
 import { scrollTo, useStore } from "../store";
 import Pouch from "./Pouch";
-import Sticker from "./Sticker";
-import Splash from "./Splash";
+import Sticker, { StickerGroup } from "./Sticker";
+import { Splash } from "./Splash";
 import CircularBadge from "./CircularBadge";
 
-const REDUCED_MQ = matchMedia(REDUCED);
-
 function useMedia(query) {
-  const [m, setM] = useState(() => matchMedia(query).matches);
+  const [matches, setMatches] = useState(() => matchMedia(query).matches);
+
   useEffect(() => {
-    const mql = matchMedia(query);
-    setM(mql.matches);
-    const onChange = () => setM(mql.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
+    const media = matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, [query]);
-  return m;
+
+  return matches;
 }
 
-function PouchLayer({ refs, static: isStatic = false }) {
+function PouchLayer({ refs, staticLayout = false }) {
   return (
-    <div className={isStatic ? "flex flex-col items-center pt-20 pb-32 gap-16" : "absolute inset-0 z-10"}>
-      {products.map((p) => (
+    <div
+      className={
+        staticLayout
+          ? "mx-auto grid w-full max-w-sm grid-cols-2 place-items-center gap-x-3 gap-y-5 px-2 py-8"
+          : "pointer-events-none absolute inset-0 z-10"
+      }
+    >
+      {products.map((product) => (
         <Pouch
-          key={p.id}
-          id={p.id}
-          label={p.label}
-          ref={(el) => (refs[p.id].current = el)}
-          className={`will-change-transform ${isStatic ? "max-w-[170px] mx-auto" : "absolute"}`}
-          style={isStatic ? { position: "static", display: "block", margin: "0 auto", marginTop: "10vh" } : { position: "absolute", left: "50%", top: "50%" }}
+          key={product.id}
+          id={product.id}
+          label={product.label}
+          ref={(element) => {
+            refs[product.id] = element;
+          }}
+          className={
+            staticLayout
+              ? "aspect-[5/7] w-full max-w-[170px] object-contain"
+              : "absolute left-1/2 top-1/2 h-[252px] w-[180px] will-change-transform"
+          }
+          style={staticLayout ? undefined : { left: "50%", top: "50%" }}
         />
       ))}
     </div>
   );
 }
 
-function HeroChapter({ static: isStatic = false }) {
+function HeroChapter({ staticLayout = false }) {
   const words = ["SIP", "WELL,", "LIVE", "WELL"];
-  const wrap = isStatic ? "relative flex flex-col items-center py-20 text-center" : "absolute inset-0 z-20 pointer-events-none";
-  const copy = isStatic ? "mt-8" : "absolute left-6 bottom-10 md:left-10 md:bottom-14";
-  const btn = isStatic ? "mt-8 pointer-events-auto" : "absolute right-6 bottom-10 md:right-10 md:bottom-14 z-30 pointer-events-auto";
-  return (
-    <section className={`${wrap} h-full`}>
-      <div className="text-center">
-        <CircularBadge className="mb-6" />
-        <h2 className="font-display font-black text-brown text-[clamp(2.5rem,14vw,9rem)] leading-[0.92] select-none">
-          {words.map((w, i) => (
-            <span key={i} className="hero-word inline-block">
-              {w}{i < words.length - 1 ? " " : null}
-            </span>
-          ))}
-        </h2>
-      </div>
-      <div className={copy}>
-        <p className="font-script text-[clamp(0.95rem,1.8vw,1.25rem)] text-brown leading-[1.4]">
-          Made from Maa's recipes.<br className="hidden md:block" />
-          Sweetened with jaggery. Ready in 30 seconds.
-        </p>
-      </div>
-      <button
-        onClick={() => scrollTo("#shop")}
-        className={`${btn} inline-flex items-center gap-2 rounded-full border-2 border-brown bg-orange px-9 py-4.5 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.35)] hover:scale-[1.02] transition-transform`}
-        aria-label="Shop premixes now"
-      >
-        Shop now
-      </button>
-    </section>
-  );
-}
 
-function StoryChapter({ static: isStatic = false }) {
-  const text = "WHOLESOME PREMIXES FOR EVERY MOOD";
-  const wrap = isStatic ? "relative flex flex-col items-center py-20 text-center" : "absolute inset-0 z-20 pointer-events-none";
-  const masks = isStatic ? "mt-10 flex flex-col gap-6 md:flex-row md:items-end" : "absolute bottom-10 right-10 md:bottom-20 md:right-20 flex gap-3 md:gap-6";
   return (
-    <section className={`${wrap} h-full`}>
-      {!isStatic && (
-        <div className="absolute top-1/2 right-10 -translate-y-1/2 md:right-20 text-right">
-          <h2 className="font-display font-black text-brown text-[clamp(1.4rem,7vw,3.75rem)] leading-[1.02] select-none md:text-[clamp(2.2rem,8vw,4.5rem)]">
-            {text.split(" ").map((w, i) => (
-              <span key={i} className="story-word inline-block opacity-0">
-                {w}
-              </span>
-            ))}
-          </h2>
-        </div>
-      )}
-      <div className={masks}>
-        <div className="w-40 h-40 md:w-56 md:h-56 rounded-full border-4 border-brown overflow-hidden shadow-[8px_8px_0_rgba(75,46,26,0.35)] rotate-2">
-          <img src="/images/lifestyle-1.jpg" alt="Lifestyle shot of premix drinks" className="w-full h-full object-cover" />
-        </div>
-        <div className="w-40 h-40 md:w-56 md:h-56 rounded-full border-4 border-brown overflow-hidden shadow-[8px_8px_0_rgba(75,46,26,0.35)] -rotate-2 mt-6 md:mt-0 md:-mr-12">
-          <img src="/images/lifestyle-2.jpg" alt="Lifestyle shot of jaggery premix" className="w-full h-full object-cover" />
-        </div>
-      </div>
-      {!isStatic && (
-        <div className="absolute top-10 left-10 md:top-20 md:left-20">
-          <Splash color="#fc7305" className="pointer-events-none" style={{ width: 320, height: 260 } } />
-          <Splash color="#63920e" className="pointer-events-none" style={{ width: 260, height: 220 } } />
-          <Splash color="#e1ac6e" className="pointer-events-none" style={{ width: 220, height: 200 } } />
-        </div>
-      )}
-      {isStatic && (
-        <div className="mt-10 max-w-xl text-center">
-          <h2 className="font-display font-black text-brown text-[clamp(1.5rem,6vw,3rem)] leading-none mb-4">Wholesome premixes for every mood</h2>
-          <p className="text-brown leading-relaxed">{products.map((p) => `${p.name}: ${p.desc}`).join(" ")}</p>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function SpotlightChapter({ static: isStatic = false }) {
-  const wrap = isStatic ? "relative py-20" : "absolute inset-0 z-20 pointer-events-none";
-  return (
-    <section className={wrap}>
-      {isStatic ? (
-        products.map((p) => (
-          <div key={p.id} className="max-w-md mx-auto text-center mb-16">
-            <h3 className="font-script text-3xl text-brown">{p.name}</h3>
-            <p className="mt-2 text-brown">{p.desc}</p>
-            <div className="mt-4 flex justify-center gap-3">{p.stickers.map((sid) => <Sticker key={sid} id={sid} />)}</div>
-            <button onClick={() => { const { add } = useStore(); add(p.id); } className="mt-4 inline-flex items-center gap-2 rounded-full border-2 border-brown bg-orange px-7 py-3 font-bold text-white" aria-label={`Add ${p.name} to cart`}>Add to cart</button>
-          </div>
-        ))
-      ) : (
-        products.map((p, i) => (
-          <div key={p.id} className="spot-panel absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none" style={{ opacity: 0 }}>
-            <h3 className="font-script text-[clamp(1.7rem,5.5vw,3rem)] text-brown leading-none">{p.name}</h3>
-            <p className="mt-4 max-w-[26rem] text-center text-brown text-[clamp(0.95rem,1.6vw,1.1rem)] leading-[1.5]">{p.desc}</p>
-            <div className="mt-6" aria-label={p.name}>
-              {p.stickers.map((sid) => (
-                <Sticker key={sid} id={sid} className="pointer-events-auto" />
-              ))}
-            </div>
-            <button
-              onClick={() => { const { add } = useStore(); add(p.id); } }
-              className="mt-6 inline-flex items-center gap-2 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[5px_5px_0_rgba(75,46,26,0.35)] hover:scale-[1.02] transition-transform pointer-events-auto"
-              aria-label={`Add ${p.name} to cart`}
-            >
-              Add to cart
-            </button>
-          </div>
-        ))
-      )}
-      {!isStatic && (
+    <section
+      className={
+        staticLayout
+          ? "relative z-10 flex flex-col items-center px-1 pt-6 text-center"
+          : "h-hero pointer-events-none absolute inset-0 z-20"
+      }
+    >
+      {staticLayout ? (
         <>
-          {products.map((p) => (
-            <div key={`${p.id}-blob`} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 md:w-[600px] md:h-[600px] rounded-full blur-[100px] opacity-0" style={{ backgroundColor: colorById[p.id] }} />
-          ))}
+          <CircularBadge />
+          <h1 className="mt-5 max-w-[12ch] font-display text-[clamp(3rem,13vw,5.5rem)] font-black leading-[0.88] text-brown">
+            {words.join(" ")}
+          </h1>
+          <p className="mt-5 max-w-xs font-script text-lg leading-snug text-brown">
+            Made from Maa&apos;s recipes. Sweetened with jaggery. Ready in 30 seconds.
+          </p>
+          <button
+            onClick={() => scrollTo("#shop")}
+            className="mt-6 rounded-full border-2 border-brown bg-orange px-8 py-3.5 font-bold text-white shadow-[5px_5px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.02]"
+          >
+            Shop now
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="absolute left-1/2 top-[12%] -translate-x-1/2">
+            <CircularBadge />
+          </div>
+          <p className="absolute bottom-10 left-6 max-w-xs font-script text-[clamp(1rem,1.8vw,1.25rem)] leading-snug text-brown md:bottom-14 md:left-10">
+            Made from Maa&apos;s recipes.
+            <br />
+            Sweetened with jaggery. Ready in 30 seconds.
+          </p>
+          <button
+            onClick={() => scrollTo("#shop")}
+            className="pointer-events-auto absolute bottom-10 right-6 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.02] md:bottom-14 md:right-10"
+            aria-label="Shop premixes now"
+          >
+            Shop now
+          </button>
         </>
       )}
     </section>
   );
 }
 
-function LineupChapter({ static: isStatic = false }) {
-  const wrap = isStatic ? "relative py-20" : "absolute inset-0 z-20 pointer-events-none";
+function StoryChapter({ staticLayout = false }) {
+  const story =
+    "Maa's handwritten recipes, made easy for every day. Stir a jaggery-sweetened premix into warm milk and enjoy a familiar cup in 30 seconds.";
+
   return (
-    <section className={wrap}>
-      {!isStatic && (
-        <svg className="absolute bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[900px]" viewBox="0 0 900 120" preserveAspectRatio="none" aria-hidden="true">
-          <rect x="120" y="60" width="180" height="60" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
-          <rect x="340" y="40" width="180" height="80" rx="12" fill="#fc7305" stroke="#4b2e1a" strokeWidth="3" />
-          <rect x="560" y="50" width="180" height="70" rx="12" fill="#63920e" stroke="#4b2e1a" strokeWidth="3" />
-          <rect x="780" y="70" width="180" height="50" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
-        </svg>
+    <section
+      id={staticLayout ? "story" : undefined}
+      className={
+        staticLayout
+          ? "relative flex flex-col items-center px-1 py-16 text-center"
+          : "h-story pointer-events-none absolute inset-0 z-20"
+      }
+    >
+      <div
+        className={
+          staticLayout
+            ? "flex flex-col items-center gap-5 sm:flex-row"
+            : "absolute bottom-10 right-6 flex gap-3 md:bottom-16 md:right-16 md:gap-6"
+        }
+      >
+        <div className="h-36 w-36 rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:h-52 md:w-52">
+          <img
+            src={ASSETS.lifestyle1}
+            alt="A warm Mixxit premix drink ready to enjoy"
+            className="h-full w-full object-cover"
+          />
+        </div>
+        <div className="mt-4 h-36 w-36 -rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:mt-0 md:h-52 md:w-52">
+          <img
+            src={ASSETS.lifestyle2}
+            alt="Ingredients for a jaggery-sweetened Mixxit drink"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+
+      {!staticLayout && (
+        <div className="absolute left-5 top-8 w-[min(34vw,320px)] md:left-10 md:top-12">
+          <Splash color="#fc7305" className="story-splash pointer-events-none w-full" />
+          <Splash color="#63920e" className="story-splash pointer-events-none absolute inset-5 w-[85%]" />
+          <Splash color="#e1ac6e" className="story-splash pointer-events-none absolute inset-10 w-[70%]" />
+        </div>
       )}
-      <div className={isStatic ? "mt-8 flex flex-col items-center gap-3" : "absolute right-10 bottom-14 md:right-16 md:bottom-20 flex flex-col gap-3"}>
-        {["natural", "jaggery", "preservatives", "love"].map((sid) => (
-          <Sticker key={sid} id={sid} className={`lineup-sticker pointer-events-auto ${isStatic ? "" : "opacity-0 scale-75"}`} />
+
+      {staticLayout && (
+        <div className="mt-9 max-w-xl">
+          <h2 className="font-display text-[clamp(1.7rem,7vw,3rem)] font-black leading-tight text-brown">
+            Wholesome premixes for every mood
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-brown">{story}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SpotlightChapter({ staticLayout = false }) {
+  const { add } = useStore();
+
+  return (
+    <section
+      className={
+        staticLayout
+          ? "relative px-1 py-16"
+          : "h-spot pointer-events-none absolute inset-0 z-20"
+      }
+    >
+      {products.map((product) => (
+        <article
+          key={product.id}
+          className={
+            staticLayout
+              ? "mx-auto mb-10 max-w-md border-b border-brown/20 pb-8 text-center last:mb-0 last:border-0"
+              : "spot-panel pointer-events-none absolute left-5 top-1/2 flex w-[min(34vw,360px)] -translate-y-1/2 flex-col items-start opacity-0 md:left-10"
+          }
+          style={staticLayout ? undefined : { opacity: 0 }}
+        >
+          <h3 className="font-script text-[clamp(1.8rem,4vw,2.7rem)] leading-tight text-brown">
+            {product.name}
+          </h3>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-brown md:text-base">
+            {product.desc}
+          </p>
+          <StickerGroup
+            ids={product.stickers}
+            className="pointer-events-auto mt-5 justify-center"
+          />
+          <button
+            onClick={() => add(product.id)}
+            className="pointer-events-auto mt-5 rounded-full border-2 border-brown bg-orange px-7 py-3 font-bold text-white transition-transform hover:scale-[1.02]"
+            aria-label={`Add ${product.name} to cart`}
+          >
+            Add to cart
+          </button>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function LineupChapter({ staticLayout = false }) {
+  return (
+    <section
+      className={
+        staticLayout
+          ? "relative flex flex-col items-center px-1 py-16 text-center"
+          : "h-lineup pointer-events-none absolute inset-0 z-20"
+      }
+    >
+      <div
+        className={
+          staticLayout
+            ? "flex max-w-sm flex-wrap justify-center gap-4"
+            : "pointer-events-none absolute bottom-12 right-6 flex max-w-sm flex-wrap justify-end gap-3 md:bottom-16 md:right-12"
+        }
+      >
+        {["natural", "jaggery", "preservatives", "love"].map((id) => (
+          <Sticker
+            key={id}
+            id={id}
+            className={`lineup-sticker ${staticLayout ? "" : "pointer-events-auto scale-75 opacity-0"}`}
+          />
         ))}
       </div>
+      {staticLayout && (
+        <h2 className="mb-8 font-display text-3xl font-black text-brown">
+          Goodness in every cup
+        </h2>
+      )}
       <button
         onClick={() => scrollTo("#shop")}
-        className={isStatic ? "mt-8" : "absolute left-10 bottom-14 md:left-16 md:bottom-20 z-30 pointer-events-auto"} + " inline-flex items-center gap-2 rounded-full border-2 border-brown bg-orange px-9 py-4.5 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.35)] hover:scale-[1.02] transition-transform"
-        aria-label="Shop the lineup"
+        className={
+          staticLayout
+            ? "mt-9 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[5px_5px_0_rgba(75,46,26,0.3)]"
+            : "pointer-events-auto absolute bottom-12 left-6 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.3)] md:bottom-16 md:left-10"
+        }
+        aria-label={staticLayout ? "Shop the lineup" : "Open your cart"}
       >
-        Shop the lineup
+        {staticLayout ? "Shop the lineup" : "Shop the lineup"}
       </button>
     </section>
   );
 }
 
-function StaticChapter({ children, className = "" }) {
-  return <section className={`relative min-h-[100vh] w-full px-5 md:px-10 pt-20 pb-32 ${className}`}>{children}</section>;
+function StaticChapter({ children, id, className = "" }) {
+  return (
+    <section
+      id={id}
+      className={`mobile-chapter relative min-h-[100svh] w-full px-5 pb-16 pt-24 md:px-10 ${className}`}
+    >
+      {children}
+    </section>
+  );
 }
 
 export default function Stage() {
   const desktop = useMedia(DESKTOP);
-  const mobile = useMedia(MOBILE);
-  const reduced = REDUCED_MQ.matches;
-
+  const reducedMotion = useMedia(REDUCED);
   const stageRef = useRef(null);
-  const refs = products.reduce((acc, p) => { acc[p.id] = useRef(null); return acc; }, {});
+  const pouchRefs = useRef(Object.fromEntries(products.map(({ id }) => [id, null])));
 
-  if (reduced) {
+  useLayoutEffect(() => {
+    const root = stageRef.current;
+    if (!root) return undefined;
+
+    const mm = gsap.matchMedia();
+
+    mm.add(DESKTOP, () => {
+      const context = gsap.context(() => {
+        const pouches = products.map(({ id }) => pouchRefs.current[id]).filter(Boolean);
+        const hero = root.querySelector(".h-hero");
+        const story = root.querySelector(".h-story");
+        const spotlight = root.querySelector(".h-spot");
+        const lineup = root.querySelector(".h-lineup");
+        const heroBackdrop = root.querySelector(".hero-backdrop");
+        const storyBackdrop = root.querySelector(".story-backdrop");
+        const heroWords = Array.from(root.querySelectorAll(".hero-word"));
+        const storyWords = Array.from(root.querySelectorAll(".story-word"));
+        const panels = Array.from(root.querySelectorAll(".spot-panel"));
+        const blobs = Array.from(root.querySelectorAll(".spot-blob"));
+        const pedestals = root.querySelector(".lineup-pedestals");
+        const stickers = Array.from(root.querySelectorAll(".lineup-sticker"));
+        const splashes = Array.from(root.querySelectorAll(".story-splash"));
+
+        const heroPositions = [
+          { x: "-18vw", y: "-3vh", rotate: -18, scale: 0.82 },
+          { x: "-5.5vw", y: "4vh", rotate: -7, scale: 1 },
+          { x: "5.5vw", y: "5vh", rotate: 8, scale: 1 },
+          { x: "18vw", y: "-2vh", rotate: 17, scale: 0.82 },
+        ];
+        const storyPositions = [
+          { x: "-38vw", y: "-19vh", rotate: -12, scale: 0.7 },
+          { x: "-29vw", y: "-4vh", rotate: 9, scale: 0.72 },
+          { x: "-20vw", y: "11vh", rotate: -8, scale: 0.72 },
+          { x: "-11vw", y: "25vh", rotate: 12, scale: 0.68 },
+        ];
+        const lineupPositions = [
+          { x: "-37.5vw", y: "30vh", rotate: 0, scale: 0.82 },
+          { x: "-12.5vw", y: "27.5vh", rotate: 0, scale: 0.82 },
+          { x: "12.5vw", y: "28.7vh", rotate: 0, scale: 0.82 },
+          { x: "37.5vw", y: "26.3vh", rotate: 0, scale: 0.82 },
+        ];
+        const dockPositions = [
+          { x: "39vw", y: "-24vh", rotate: 0, scale: 0.46 },
+          { x: "39vw", y: "-8vh", rotate: 0, scale: 0.46 },
+          { x: "39vw", y: "8vh", rotate: 0, scale: 0.46 },
+          { x: "39vw", y: "24vh", rotate: 0, scale: 0.46 },
+        ];
+
+        gsap.set(pouches, { xPercent: -50, yPercent: -50 });
+        gsap.set([story, spotlight, lineup, storyBackdrop, pedestals], { opacity: 0 });
+        gsap.set(hero, { opacity: 1 });
+        gsap.set(panels, { opacity: 0 });
+        gsap.set(blobs, { opacity: 0 });
+
+        gsap.fromTo(
+          pouches,
+          { y: "110vh", opacity: 0 },
+          {
+            x: (index) => heroPositions[index].x,
+            y: (index) => heroPositions[index].y,
+            rotate: (index) => heroPositions[index].rotate,
+            scale: (index) => heroPositions[index].scale,
+            opacity: 1,
+            duration: 1.1,
+            ease: "power3.out",
+            stagger: 0.08,
+          }
+        );
+        gsap.fromTo(
+          heroWords,
+          { yPercent: 115, opacity: 0 },
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: "power3.out",
+            stagger: 0.08,
+            delay: 0.12,
+          }
+        );
+
+        const timeline = gsap.timeline();
+        timeline.to(
+          pouches,
+          {
+            x: (index) => storyPositions[index].x,
+            y: (index) => storyPositions[index].y,
+            rotate: (index) => storyPositions[index].rotate,
+            scale: (index) => storyPositions[index].scale,
+            duration: 0.8,
+          },
+          0.8
+        );
+        timeline.to([hero, heroBackdrop], { opacity: 0, duration: 0.35 }, 0.8);
+        timeline.to([story, storyBackdrop], { opacity: 1, duration: 0.35 }, 0.8);
+        timeline.to(storyWords, { opacity: 1, stagger: 0.055, duration: 0.18 }, 0.88);
+        timeline.to(splashes, { opacity: 0.9, y: "8vh", stagger: 0.08, duration: 0.35 }, 0.9);
+        timeline.to(storyWords, { opacity: 0, stagger: 0.035, duration: 0.16 }, 1.65);
+        timeline.to(splashes, { opacity: 0, y: 0, duration: 0.3 }, 1.7);
+        timeline.to([story, storyBackdrop], { opacity: 0, duration: 0.35 }, 2);
+        timeline.to(spotlight, { opacity: 1, duration: 0.35 }, 2);
+
+        products.forEach((product, activeIndex) => {
+          const start = 2.2 + activeIndex * 0.88;
+          timeline.to(
+            pouches,
+            {
+              x: (index) =>
+                index === activeIndex ? "11vw" : dockPositions[index].x,
+              y: (index) =>
+                index === activeIndex ? "0vh" : dockPositions[index].y,
+              rotate: (index) =>
+                index === activeIndex ? 0 : dockPositions[index].rotate,
+              scale: (index) =>
+                index === activeIndex ? 1.16 : dockPositions[index].scale,
+              duration: 0.38,
+            },
+            start
+          );
+          timeline.to(
+            panels,
+            {
+              opacity: (index) => (index === activeIndex ? 1 : 0),
+              duration: 0.2,
+            },
+            start + 0.12
+          );
+          timeline.to(
+            blobs,
+            {
+              opacity: (index) => (index === activeIndex ? 0.28 : 0),
+              duration: 0.24,
+            },
+            start + 0.08
+          );
+        });
+
+        timeline.to(
+          pouches,
+          {
+            x: (index) => lineupPositions[index].x,
+            y: (index) => lineupPositions[index].y,
+            rotate: (index) => lineupPositions[index].rotate,
+            scale: (index) => lineupPositions[index].scale,
+            duration: 0.65,
+          },
+          5.85
+        );
+        timeline.to([spotlight, ...blobs], { opacity: 0, duration: 0.35 }, 5.85);
+        timeline.to(lineup, { opacity: 1, duration: 0.35 }, 5.95);
+        timeline.to(pedestals, { opacity: 1, duration: 0.35 }, 5.95);
+        timeline.to(
+          stickers,
+          {
+            opacity: 1,
+            scale: 1,
+            rotate: (index) => [-6, 6, -4, 5][index],
+            duration: 0.3,
+            stagger: 0.1,
+          },
+          6.05
+        );
+
+        ScrollTrigger.create({
+          trigger: root,
+          start: "top top",
+          end: "+=500%",
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          animation: timeline,
+        });
+      }, root);
+
+      return () => context.revert();
+    });
+
+    mm.add(MOBILE, () => {
+      const context = gsap.context(() => {
+        root.querySelectorAll(".mobile-chapter").forEach((chapter) => {
+          gsap.fromTo(
+            chapter,
+            { y: 24, opacity: 0.65 },
+            {
+              y: 0,
+              opacity: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: chapter,
+                start: "top 85%",
+                end: "top 50%",
+                scrub: true,
+              },
+            }
+          );
+        });
+      }, root);
+
+      return () => context.revert();
+    });
+
+    return () => mm.revert();
+  }, [desktop, reducedMotion]);
+
+  if (desktop && !reducedMotion) {
     return (
-      <>
-        <StaticChapter id="stage">
-          <PouchLayer refs={refs} static />
-          <HeroChapter static />
-          <StoryChapter static />
-          <SpotlightChapter static />
-          <LineupChapter static />
-        </StaticChapter>
-      </>
+      <section
+        ref={stageRef}
+        id="stage"
+        className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-white"
+      >
+        <div className="pointer-events-none absolute inset-0 z-0 select-none" aria-hidden="true">
+          <h1 className="hero-backdrop absolute left-1/2 top-[43%] w-[96%] -translate-x-1/2 -translate-y-1/2 text-center font-display text-[clamp(3.5rem,12vw,10rem)] font-black leading-[0.82] text-brown">
+            {["SIP", "WELL,", "LIVE", "WELL"].map((word, index) => (
+              <span className="hero-word inline-block" key={word}>
+                {word}
+                {index < 3 ? " " : ""}
+              </span>
+            ))}
+          </h1>
+          <h2 className="story-backdrop absolute right-[7%] top-[42%] w-[56%] -translate-y-1/2 text-right font-display text-[clamp(2rem,6vw,5rem)] font-black leading-[0.9] text-brown">
+            {"WHOLESOME PREMIXES FOR EVERY MOOD".split(" ").map((word) => (
+              <span className="story-word mr-[0.22em] inline-block opacity-0" key={word}>
+                {word}
+              </span>
+            ))}
+          </h2>
+          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.rose }} />
+          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.choco }} />
+          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.haldi }} />
+          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.makhana }} />
+          <svg
+            className="lineup-pedestals absolute bottom-[2vh] left-0 h-[13vh] w-full"
+            viewBox="0 0 900 120"
+            preserveAspectRatio="none"
+          >
+            <rect x="12.5" y="60" width="200" height="60" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
+            <rect x="237.5" y="36" width="200" height="84" rx="12" fill="#fc7305" stroke="#4b2e1a" strokeWidth="3" />
+            <rect x="462.5" y="48" width="200" height="72" rx="12" fill="#63920e" stroke="#4b2e1a" strokeWidth="3" />
+            <rect x="687.5" y="24" width="200" height="96" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
+          </svg>
+        </div>
+        <PouchLayer refs={pouchRefs.current} />
+        <HeroChapter />
+        <StoryChapter />
+        <SpotlightChapter />
+        <LineupChapter />
+      </section>
     );
   }
 
-  const desktopMarkup = (
-    <section ref={stageRef} className="relative w-full min-h-[100vh] overflow-hidden bg-paper" id="stage">
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-display font-black text-brown text-[clamp(3rem,16vw,12rem)] leading-[0.92]">SIP WELL, LIVE WELL</h2>
-        <h2 className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 font-display font-black text-brown text-[clamp(1.5rem,7vw,3.5rem)] leading-[1.02] text-right">WHOLESOME PREMIXES FOR EVERY MOOD</h2>
-      </div>
-      <PouchLayer refs={refs} />
-      <HeroChapter />
-      <StoryChapter />
-      <SpotlightChapter />
-      <LineupChapter />
-    </section>
-  );
-
-  const mobileMarkup = (
-    <section id="stage" className="relative w-full bg-paper">
-      <StaticChapter className="h-hero">
-        <HeroChapter static />
-        <PouchLayer refs={refs} static />
+  return (
+    <section ref={stageRef} id="stage" className="relative w-full bg-white">
+      <StaticChapter id="hero" className="flex flex-col items-center">
+        <HeroChapter staticLayout />
+        <PouchLayer refs={pouchRefs.current} staticLayout />
       </StaticChapter>
-      <StaticChapter id="story" className="h-story">
-        <PouchLayer refs={refs} static />
-        <StoryChapter static />
+      <StaticChapter className="flex flex-col items-center">
+        <StoryChapter staticLayout />
       </StaticChapter>
-      <StaticChapter id="spotlight" className="h-spot">
-        <PouchLayer refs={refs} static />
-        <SpotlightChapter static />
+      <StaticChapter className="flex flex-col items-center">
+        <SpotlightChapter staticLayout />
       </StaticChapter>
-      <StaticChapter id="lineup" className="h-lineup">
-        <PouchLayer refs={refs} static />
-        <LineupChapter static />
+      <StaticChapter className="flex flex-col items-center">
+        <LineupChapter staticLayout />
       </StaticChapter>
     </section>
   );
-
-  useLayoutEffect(() => {
-    if (!desktop) return;
-    const root = stageRef.current;
-    if (!root) return;
-    const ctx = gsap.context(() => {
-      const pouches = products.map((p) => refs[p.id].current).filter(Boolean);
-      const heroWords = root.querySelectorAll(".hero-word");
-      const storyWords = root.querySelectorAll(".story-word");
-      const overlays = {
-        hero: root.querySelector(".h-hero"),
-        story: root.querySelector(".h-story"),
-        spot: root.querySelector(".h-spot"),
-        lineup: root.querySelector(".h-lineup"),
-      };
-      const spotPanels = root.querySelectorAll(".spot-panel");
-      const blobs = root.querySelectorAll('[class*="-blob"]');
-      const stickers = root.querySelectorAll(".lineup-sticker");
-      const splashes = root.querySelectorAll("section.h-story svg");
-
-      gsap.defaults({ ease: "power2.inOut", overwrite: true });
-
-      const tl = gsap.timeline({ paused: true, smoothChildTiming: true });
-
-      const heroPos = [
-        { x: "-30vw", y: "6vh", rotate: -20, scale: 0.8 },
-        { x: "-12vw", y: "14vh", rotate: -8, scale: 1 },
-        { x: "15vw", y: "20vh", rotate: 10, scale: 1 },
-        { x: "34vw", y: "12vh", rotate: 14, scale: 0.8 },
-      ];
-      const storyPos = [
-        { x: "-52vw", y: "-6vh", rotate: 24, scale: 0.75 },
-        { x: "-26vw", y: "10vh", rotate: -18, scale: 0.9 },
-        { x: "-46vw", y: "30vh", rotate: 16, scale: 0.75 },
-        { x: "-62vw", y: "18vh", rotate: -12, scale: 0.7 },
-      ];
-      const spotlightPos = { x: 0, y: "20vh", rotate: 0, scale: 1.15 };
-      const dockPos = [
-        { x: "62vw", y: "14vh", rotate: 0, scale: 0.5 },
-        { x: "62vw", y: "34vh", rotate: 0, scale: 0.5 },
-        { x: "62vw", y: "54vh", rotate: 0, scale: 0.5 },
-      ];
-      const lineupPos = [
-        { x: "-26vw", y: "34vh", rotate: 0, scale: 0.9 },
-        { x: "-8vw", y: "26vh", rotate: 0, scale: 0.9 },
-        { x: "10vw", y: "30vh", rotate: 0, scale: 0.9 },
-        { x: "28vw", y: "24vh", rotate: 0, scale: 0.9 },
-      ];
-
-      gsap.set(overlays.hero, { opacity: 1 });
-
-      tl.to(
-        pouches,
-        {
-          x: (i) => storyPos[i].x,
-          y: (i) => storyPos[i].y,
-          rotate: (i) => storyPos[i].rotate,
-          scale: (i) => storyPos[i].scale,
-        },
-        0.32
-      );
-      tl.to(overlays.hero, { opacity: 0 }, 0.32);
-      tl.to(overlays.story, { opacity: 1 }, 0.32);
-
-      tl.to(storyWords, { opacity: 1, stagger: 0.05, ease: "none" }, 0.36);
-      tl.to(storyWords, { opacity: 0, stagger: 0.05, ease: "none" }, 0.62);
-      tl.to(splashes, { opacity: 0.9, y: "12vh", stagger: 0.08, ease: "none" }, 0.4);
-      tl.to(splashes, { opacity: 0, y: 0, ease: "none" }, 0.62);
-
-      products.forEach((p, i) => {
-        const t = 0.72 + i * 0.115;
-        const active = refs[p.id].current;
-        const others = pouches.filter((_, j) => j !== i);
-        const dock = dockPos.slice(0, 3);
-        tl.fromTo(active, { x: "-=0" }, spotlightPos, t);
-        others.forEach((el, j) => tl.fromTo(el, { x: "-=0" }, dock[j], t));
-        tl.to(spotPanels, { opacity: (j) => (j === i ? 1 : 0), ease: "none" }, t);
-        tl.to(blobs, { opacity: (j) => (j === i ? 0.35 : 0), ease: "none" }, t);
-      });
-
-      tl.to(
-        pouches,
-        {
-          x: (i) => lineupPos[i].x,
-          y: (i) => lineupPos[i].y,
-          rotate: (i) => lineupPos[i].rotate,
-          scale: (i) => lineupPos[i].scale,
-        },
-        1.22
-      );
-      tl.to(overlays.spot, { opacity: 0 }, 1.22);
-      tl.to(overlays.lineup, { opacity: 1 }, 1.22);
-      tl.to(stickers, { opacity: 1, scale: 1, rotate: (i) => [-6, 6, -4, 5][i], stagger: 0.09 }, 1.26);
-
-      ScrollTrigger.create({
-        trigger: root,
-        start: "top top",
-        end: "+=400%",
-        pin: true,
-        scrub: 1,
-        anticipatePin: 1,
-        animation: tl,
-      });
-    }, root);
-    return () => ctx.revert();
-  }, [desktop]);
-
-  useLayoutEffect(() => {
-    if (!desktop) return;
-    const root = stageRef.current;
-    if (!root) return;
-    const ctx = gsap.context(() => {
-      const pouches = products.map((p) => refs[p.id].current).filter(Boolean);
-      const heroWords = root.querySelectorAll(".hero-word");
-      const heroPos = [
-        { x: "-30vw", y: "6vh", rotate: -20, scale: 0.8 },
-        { x: "-12vw", y: "14vh", rotate: -8, scale: 1 },
-        { x: "15vw", y: "20vh", rotate: 10, scale: 1 },
-        { x: "34vw", y: "12vh", rotate: 14, scale: 0.8 },
-      ];
-      gsap.fromTo(
-        pouches,
-        { y: "110vh", opacity: 0 },
-        { y: (i) => heroPos[i].y, x: (i) => heroPos[i].x, rotate: (i) => heroPos[i].rotate, scale: (i) => heroPos[i].scale, opacity: 1, duration: 1, ease: "power3.out", stagger: 0.1 }
-      );
-      gsap.fromTo(heroWords, { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1, ease: "power3.out", stagger: 0.08 });
-    }, root);
-    return () => ctx.revert();
-  }, [desktop]);
-
-  useLayoutEffect(() => {
-    if (!mobile) return;
-    const ctx = gsap.context(() => {
-      document.querySelectorAll("#stage section").forEach((el) => {
-        gsap.fromTo(el, { opacity: 0, y: 40 }, { opacity: 1, y: 0, scrollTrigger: { trigger: el, start: "top 78%", end: "bottom 60%", scrub: true } });
-      });
-    });
-    return () => ctx.revert();
-  }, [mobile]);
-
-  return desktop ? desktopMarkup : mobileMarkup;
 }

@@ -8,6 +8,7 @@ import StickerGroup from "./Sticker";
 export default function ProductCard({ p, className = "" }) {
   const { add } = useStore();
   const [done, setDone] = useState(false);
+  const mrp = Math.round(p.price * 1.4);
 
   const onAdd = () => {
     add(p.id);
@@ -17,29 +18,32 @@ export default function ProductCard({ p, className = "" }) {
 
   return (
     <motion.article
-      whileHover={{ y: -8, rotate: -3 }}
-      whileTap={{ scale: 0.96 }}
+      whileHover={{ y: -8 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 300, damping: 18 }}
-      className={`p-card overflow-hidden rounded-[2rem] border-2 border-brown bg-white shadow-[8px_8px_0_rgba(75,46,26,0.3)] ${className}`}
+      className={`p-card overflow-hidden rounded-2xl border border-brown/20 bg-white shadow-[4px_4px_0_rgba(75,46,26,0.15)] ${className}`}
     >
-      <div className="grid place-items-center py-10" style={{ background: p.color }}>
-        <Pouch id={p.id} label={p.label} className="w-40 mx-auto" />
+      <div className="relative h-48 bg-brown/5 flex items-center justify-center overflow-hidden">
+        <Pouch id={p.id} label={p.label} className="h-full w-full object-contain mx-auto" />
       </div>
-      <div className="p-6">
-        <h3 className="font-script text-3xl text-brown">{p.name}</h3>
-        <p className="mt-2 text-sm text-brown">{p.desc}</p>
-        <div className="mt-4 flex justify-center gap-3">
-          <StickerGroup ids={p.stickers} gap="2" />
-        </div>
-        <div className="mt-6 flex items-center justify-between">
-          <span className="text-xl font-bold text-brown">₹{p.price}</span>
+      <div className="p-4">
+        <h3 className="font-script text-2xl text-brown leading-tight">{p.name}</h3>
+        <p className="mt-1 text-sm text-brown/60">{p.desc}</p>
+        <div className="mt-4 flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-brown">₹{p.price}</span>
+            <span className="ml-1.5 text-sm text-brown/40 line-through">₹{mrp}</span>
+          </div>
           <motion.button
-            whileTap={{ scale: 0.92 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onAdd}
-            className="inline-flex items-center gap-1.5 rounded-full border-2 border-brown bg-brown px-4 py-2.5 text-xs font-bold text-white hover:text-orange"
+            className="inline-flex items-center gap-1.5 rounded-full border-2 border-brown bg-brown px-5 py-2 text-sm font-bold text-white transition-all hover:bg-brown/90"
           >
-            {done ? "Added" : "Add to cart"}
+            {done ? "Added" : <><Plus size={16} /> Add to cart</>}
           </motion.button>
+        </div>
+        <div className="mt-3 flex justify-center gap-2">
+          <StickerGroup ids={p.stickers} gap="1.5" small />
         </div>
       </div>
     </motion.article>

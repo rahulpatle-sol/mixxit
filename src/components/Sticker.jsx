@@ -1,9 +1,9 @@
 import { motion } from "motion/react";
-import { Leaf, Box, FlaskConical, Heart } from "lucide-react";
+import { Cuboid, FlaskConical, Heart, Leaf } from "lucide-react";
 
 const ICONS = {
   natural: Leaf,
-  jaggery: Box,
+  jaggery: Cuboid,
   preservatives: FlaskConical,
   love: Heart,
 };
@@ -15,32 +15,37 @@ const TITLES = {
   love: "Made with Love",
 };
 
-const ROTATE = { natural: -6, jaggery: 6, preservatives: -4, love: 5 };
+const ROTATIONS = { natural: -6, jaggery: 6, preservatives: -4, love: 5 };
+const GAPS = { 2: "gap-2", 3: "gap-3", 4: "gap-4" };
 
-export function Sticker({ id, className = "" }) {
+export default function Sticker({ id, className = "", small = false }) {
   const Icon = ICONS[id];
-  const rot = ROTATE[id];
+  const rotation = ROTATIONS[id] ?? 0;
 
   return (
     <motion.div
-      whileHover={{ rotate: rot + 9, scale: 1.07 }}
+      role="img"
+      aria-label={TITLES[id] ?? id}
+      style={{ rotate: rotation }}
+      whileHover={{ rotate: rotation + 9, scale: 1.07 }}
       transition={{ type: "spring", stiffness: 320, damping: 18 }}
-      className={`flex flex-col items-center justify-center h-22 w-22 rounded-full border-4 border-brown bg-paper shadow-[5px_5px_0_rgba(75,46,26,0.35)] rotate-[${rot}deg] will-change-transform ${className}`}
-      aria-label={TITLES[id]}
+      className={`flex shrink-0 flex-col items-center justify-center rounded-full border border-brown bg-white/90 shadow-[3px_3px_0_rgba(75,46,26,0.15)] will-change-transform ${small ? "h-8 w-8" : "h-10 w-10"} ${className}`}
     >
-      <Icon size={18} className="text-brown" />
-      <span className="mt-1.5 font-script text-brown text-xs leading-tight text-center select-none">
-        {TITLES[id]}
-      </span>
+      {Icon && <Icon size={small ? 10 : 14} aria-hidden="true" className="text-brown" />}
+      {small && (
+        <span className="mt-0.5 select-none text-center font-script text-[10px] leading-tight text-brown">
+          {TITLES[id] ?? id}
+        </span>
+      )}
     </motion.div>
   );
 }
 
-export function StickerGroup({ ids, className = "", gap = "3" }) {
+export function StickerGroup({ ids = [], className = "", gap = "2", small = false }) {
   return (
-    <div className={`flex flex-wrap gap-${gap} ${className}`}>
+    <div className={`flex flex-wrap ${GAPS[gap] ?? GAPS[2]} ${className}`}>
       {ids.map((id) => (
-        <Sticker key={id} id={id} />
+        <Sticker key={id} id={id} small={small} />
       ))}
     </div>
   );

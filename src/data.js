@@ -39,3 +39,51 @@ export const products = [
 ];
 
 export const colorById = Object.fromEntries(products.map((p) => [p.id, p.color]));
+
+export const fruitSnacks = [
+  {
+    id: "mango",
+    name: "Mango Fruit Snack",
+    price: 199,
+    color: "#f4a261",
+    label: "Mango",
+    desc: "Juicy sun-ripened mango strips, chewy and bright.",
+    stickers: ["fruit", "natural"],
+  },
+  {
+    id: "strawberry",
+    name: "Strawberry Fruit Snack",
+    price: 229,
+    color: "#e76f51",
+    label: "Strawberry",
+    desc: "Tart-sweet strawberry bites, dried at peak freshness.",
+    stickers: ["fruit", "natural"],
+  },
+  {
+    id: "pineapple",
+    name: "Pineapple Fruit Snack",
+    price: 189,
+    color: "#e9c46a",
+    label: "Pineapple",
+    desc: "Tropical pineapple chunks with a zesty kick.",
+    stickers: ["fruit", "natural"],
+  },
+  {
+    id: "apple",
+    name: "Apple Fruit Snack",
+    price: 179,
+    color: "#2a9d8f",
+    label: "Apple",
+    desc: "Crisp apple slices, lightly sweetened with jaggery.",
+    stickers: ["fruit", "jaggery"],
+  },
+  {
+    id: "grapes",
+    name: "Grape Fruit Snack",
+    price: 219,
+    color: "#6a0dad",
+    label: "Grapes",
+    desc: "Plump dried grapes bursting with berry sweetness.",
+    stickers: ["fruit", "natural"],
+  },
+];
