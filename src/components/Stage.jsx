@@ -1,16 +1,37 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, DESKTOP, MOBILE, REDUCED } from "../gsap";
 import { products, colorById } from "../data";
-import { ASSETS } from "../assets";
+import { PHOTOS } from "../assets";
 import { scrollTo, useStore } from "../store";
 import Pouch from "./Pouch";
+import Img from "./Img";
 import Sticker, { StickerGroup } from "./Sticker";
 import { Splash } from "./Splash";
 import CircularBadge from "./CircularBadge";
 
+// ---- layout numbers (vw / vh units, hum px me convert karte hain) ----
+const HERO = [
+  { x: -17, y: 3, r: -16, s: 0.86 },
+  { x: -6, y: 8, r: -6, s: 1 },
+  { x: 6, y: 8, r: 6, s: 1 },
+  { x: 17, y: 3, r: 16, s: 0.86 },
+];
+const STORY = [
+  { x: -33, y: -14, r: -9, s: 0.78 },
+  { x: -20, y: -9, r: 7, s: 0.78 },
+  { x: -32, y: 15, r: 6, s: 0.78 },
+  { x: -19, y: 20, r: -8, s: 0.78 },
+];
+const DOCK_X = 40;
+const DOCK_Y = [-27, -9, 9, 27];
+const SPOT_X = 12;
+const LINEUP_SCALE = 0.88;
+const LINEUP_X = (i) => (i - 1.5) * 21;
+const PEDESTAL_VH = [9, 15, 12, 18];
+const PEDESTAL_BG = ["bg-tan", "bg-orange", "bg-green", "bg-tan"];
+
 function useMedia(query) {
   const [matches, setMatches] = useState(() => matchMedia(query).matches);
-
   useEffect(() => {
     const media = matchMedia(query);
     const update = () => setMatches(media.matches);
@@ -18,85 +39,76 @@ function useMedia(query) {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, [query]);
-
   return matches;
 }
 
 function PouchLayer({ refs, staticLayout = false }) {
+  if (staticLayout) {
+    return (
+      <div className="mx-auto grid w-full max-w-sm grid-cols-2 place-items-center gap-x-3 gap-y-5 px-2 py-8">
+        {products.map((p) => (
+          <Pouch key={p.id} id={p.id} label={p.label} className="h-auto w-full max-w-[170px]" />
+        ))}
+      </div>
+    );
+  }
+  // Do layer: outer (.pouch-intro) sirf page-load intro ke liye, inner (.pouch-el) sirf scroll timeline ke liye.
   return (
-    <div
-      className={
-        staticLayout
-          ? "mx-auto grid w-full max-w-sm grid-cols-2 place-items-center gap-x-3 gap-y-5 px-2 py-8"
-          : "pointer-events-none absolute inset-0 z-10"
-      }
-    >
-      {products.map((product) => (
-        <Pouch
-          key={product.id}
-          id={product.id}
-          label={product.label}
-          ref={(element) => {
-            refs[product.id] = element;
-          }}
-          className={
-            staticLayout
-              ? "aspect-[5/7] w-full max-w-[170px] object-contain"
-              : "absolute left-1/2 top-1/2 h-[252px] w-[180px] will-change-transform"
-          }
-          style={staticLayout ? undefined : { left: "50%", top: "50%" }}
-        />
+    <div className="pointer-events-none absolute inset-0 z-10">
+      {products.map((p) => (
+        <div key={p.id} className="pouch-intro absolute inset-0">
+          <div
+            ref={(el) => {
+              refs[p.id] = el;
+            }}
+            className="absolute left-1/2 top-1/2 will-change-transform"
+            style={{ width: "var(--pw)", height: "calc(var(--pw) * 1.4667)" }}
+          >
+            <Pouch id={p.id} label={p.label} className="h-full w-full" />
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
 function HeroChapter({ staticLayout = false }) {
-  const words = ["SIP", "WELL,", "LIVE", "WELL"];
-
+  if (staticLayout) {
+    return (
+      <section className="relative z-10 flex flex-col items-center px-1 pt-6 text-center">
+        <CircularBadge />
+        <h1 className="mt-5 max-w-[12ch] font-display text-[clamp(3rem,13vw,5.5rem)] font-extrabold leading-[0.9] text-brown">
+          SIP WELL, LIVE WELL
+        </h1>
+        <p className="mt-5 max-w-xs font-script text-lg leading-snug">
+          Made from Maa&apos;s recipes. Sweetened with jaggery. Ready in 30 seconds.
+        </p>
+        <button
+          onClick={() => scrollTo("#shop")}
+          className="mt-6 rounded-full border-2 border-brown bg-orange px-8 py-3.5 font-bold text-brown shadow-[5px_5px_0_rgba(75,46,26,0.3)]"
+        >
+          Shop now
+        </button>
+      </section>
+    );
+  }
   return (
-    <section
-      className={
-        staticLayout
-          ? "relative z-10 flex flex-col items-center px-1 pt-6 text-center"
-          : "h-hero pointer-events-none absolute inset-0 z-20"
-      }
-    >
-      {staticLayout ? (
-        <>
-          <CircularBadge />
-          <h1 className="mt-5 max-w-[12ch] font-display text-[clamp(3rem,13vw,5.5rem)] font-black leading-[0.88] text-brown">
-            {words.join(" ")}
-          </h1>
-          <p className="mt-5 max-w-xs font-script text-lg leading-snug text-brown">
-            Made from Maa&apos;s recipes. Sweetened with jaggery. Ready in 30 seconds.
-          </p>
-          <button
-            onClick={() => scrollTo("#shop")}
-            className="mt-6 rounded-full border-2 border-brown bg-orange px-8 py-3.5 font-bold text-white shadow-[5px_5px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.02]"
-          >
-            Shop now
-          </button>
-        </>
-      ) : (
-        <>
-          <div className="absolute left-1/2 top-[12%] -translate-x-1/2">
-            <CircularBadge />
-          </div>
-          <p className="absolute bottom-10 left-6 max-w-xs font-script text-[clamp(1rem,1.8vw,1.25rem)] leading-snug text-brown md:bottom-14 md:left-10">
-            Made from Maa&apos;s recipes.
-            <br />
-            Sweetened with jaggery. Ready in 30 seconds.
-          </p>
-          <button
-            onClick={() => scrollTo("#shop")}
-            className="pointer-events-auto absolute bottom-10 right-6 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.02] md:bottom-14 md:right-10"
-            aria-label="Shop premixes now"
-          >
-            Shop now
-          </button>
-        </>
-      )}
+    <section className="h-hero pointer-events-none absolute inset-0 z-20">
+      <div className="absolute left-1/2 top-[17%] -translate-x-1/2">
+        <CircularBadge />
+      </div>
+      <p className="absolute bottom-10 left-6 max-w-xs font-script text-[clamp(1rem,1.8vw,1.3rem)] leading-snug md:bottom-14 md:left-10">
+        Made from Maa&apos;s recipes.
+        <br />
+        Sweetened with jaggery. Ready in 30 seconds.
+      </p>
+      <button
+        onClick={() => scrollTo("#shop")}
+        className="pointer-events-auto absolute bottom-10 right-6 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-brown shadow-[6px_6px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.03] md:bottom-14 md:right-10"
+        aria-label="Shop premixes now"
+      >
+        Shop now
+      </button>
     </section>
   );
 }
@@ -105,93 +117,76 @@ function StoryChapter({ staticLayout = false }) {
   const story =
     "Maa's handwritten recipes, made easy for every day. Stir a jaggery-sweetened premix into warm milk and enjoy a familiar cup in 30 seconds.";
 
-  return (
-    <section
-      id={staticLayout ? "story" : undefined}
+  const circles = (
+    <div
       className={
         staticLayout
-          ? "relative flex flex-col items-center px-1 py-16 text-center"
-          : "h-story pointer-events-none absolute inset-0 z-20"
+          ? "flex flex-col items-center gap-5 sm:flex-row"
+          : "absolute bottom-10 right-6 flex gap-3 md:bottom-16 md:right-16 md:gap-6"
       }
     >
-      <div
-        className={
-          staticLayout
-            ? "flex flex-col items-center gap-5 sm:flex-row"
-            : "absolute bottom-10 right-6 flex gap-3 md:bottom-16 md:right-16 md:gap-6"
-        }
-      >
-        <div className="h-36 w-36 rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:h-52 md:w-52">
-          <img
-            src={ASSETS.lifestyle1}
-            alt="A warm Mixxit premix drink ready to enjoy"
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="mt-4 h-36 w-36 -rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:mt-0 md:h-52 md:w-52">
-          <img
-            src={ASSETS.lifestyle2}
-            alt="Ingredients for a jaggery-sweetened Mixxit drink"
-            className="h-full w-full object-cover"
-          />
-        </div>
+      <div className="h-36 w-36 rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:h-52 md:w-52">
+        <Img src={PHOTOS.lifestyle1} alt="A warm Mixxit premix drink ready to enjoy" className="h-full w-full object-cover" />
       </div>
+      <div className="mt-4 h-36 w-36 -rotate-2 overflow-hidden rounded-full border-4 border-brown shadow-[7px_7px_0_rgba(75,46,26,0.25)] md:mt-0 md:h-52 md:w-52">
+        <Img src={PHOTOS.lifestyle2} alt="Ingredients for a jaggery-sweetened Mixxit drink" className="h-full w-full object-cover" />
+      </div>
+    </div>
+  );
 
-      {!staticLayout && (
-        <div className="absolute left-5 top-8 w-[min(34vw,320px)] md:left-10 md:top-12">
-          <Splash color="#fc7305" className="story-splash pointer-events-none w-full" />
-          <Splash color="#63920e" className="story-splash pointer-events-none absolute inset-5 w-[85%]" />
-          <Splash color="#e1ac6e" className="story-splash pointer-events-none absolute inset-10 w-[70%]" />
-        </div>
-      )}
-
-      {staticLayout && (
+  if (staticLayout) {
+    return (
+      <section id="story" className="relative flex flex-col items-center px-1 py-16 text-center">
+        {circles}
         <div className="mt-9 max-w-xl">
-          <h2 className="font-display text-[clamp(1.7rem,7vw,3rem)] font-black leading-tight text-brown">
+          <h2 className="font-display text-[clamp(1.7rem,7vw,3rem)] font-extrabold leading-tight">
             Wholesome premixes for every mood
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-brown">{story}</p>
+          <p className="mt-4 text-base leading-relaxed">{story}</p>
         </div>
-      )}
-    </section>
-  );
+      </section>
+    );
+  }
+  return <section className="h-story pointer-events-none absolute inset-0 z-20">{circles}</section>;
 }
 
 function SpotlightChapter({ staticLayout = false }) {
   const { add } = useStore();
 
+  if (staticLayout) {
+    return (
+      <section className="relative px-1 py-16">
+        {products.map((p) => (
+          <article key={p.id} className="mx-auto mb-10 max-w-md border-b border-brown/20 pb-8 text-center last:mb-0 last:border-0">
+            <h3 className="font-script text-[clamp(1.8rem,6vw,2.5rem)] leading-tight">{p.name}</h3>
+            <p className="mt-3 text-sm leading-relaxed">{p.desc}</p>
+            <StickerGroup ids={p.stickers} size="md" className="mt-5 justify-center" />
+            <button
+              onClick={() => add(p.id)}
+              className="mt-5 rounded-full border-2 border-brown bg-orange px-7 py-3 font-bold text-brown"
+              aria-label={`Add ${p.name} to cart`}
+            >
+              Add to cart
+            </button>
+          </article>
+        ))}
+      </section>
+    );
+  }
   return (
-    <section
-      className={
-        staticLayout
-          ? "relative px-1 py-16"
-          : "h-spot pointer-events-none absolute inset-0 z-20"
-      }
-    >
-      {products.map((product) => (
+    <section className="h-spot pointer-events-none absolute inset-0 z-20">
+      {products.map((p) => (
         <article
-          key={product.id}
-          className={
-            staticLayout
-              ? "mx-auto mb-10 max-w-md border-b border-brown/20 pb-8 text-center last:mb-0 last:border-0"
-              : "spot-panel pointer-events-none absolute left-5 top-1/2 flex w-[min(34vw,360px)] -translate-y-1/2 flex-col items-start opacity-0 md:left-10"
-          }
-          style={staticLayout ? undefined : { opacity: 0 }}
+          key={p.id}
+          className="spot-panel absolute left-5 top-1/2 flex w-[min(34vw,380px)] flex-col items-start opacity-0 md:left-10"
         >
-          <h3 className="font-script text-[clamp(1.8rem,4vw,2.7rem)] leading-tight text-brown">
-            {product.name}
-          </h3>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-brown md:text-base">
-            {product.desc}
-          </p>
-          <StickerGroup
-            ids={product.stickers}
-            className="pointer-events-auto mt-5 justify-center"
-          />
+          <h3 className="font-script text-[clamp(2rem,4.2vw,3.2rem)] leading-tight">{p.name}</h3>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed md:text-base">{p.desc}</p>
+          <StickerGroup ids={p.stickers} size="md" className="pointer-events-auto mt-5" />
           <button
-            onClick={() => add(product.id)}
-            className="pointer-events-auto mt-5 rounded-full border-2 border-brown bg-orange px-7 py-3 font-bold text-white transition-transform hover:scale-[1.02]"
-            aria-label={`Add ${product.name} to cart`}
+            onClick={() => add(p.id)}
+            className="pointer-events-auto mt-6 rounded-full border-2 border-brown bg-orange px-7 py-3 font-bold text-brown shadow-[5px_5px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.03]"
+            aria-label={`Add ${p.name} to cart`}
           >
             Add to cart
           </button>
@@ -202,55 +197,51 @@ function SpotlightChapter({ staticLayout = false }) {
 }
 
 function LineupChapter({ staticLayout = false }) {
+  const ids = ["natural", "jaggery", "preservatives", "love"];
+
+  if (staticLayout) {
+    return (
+      <section className="relative flex flex-col items-center px-1 py-16 text-center">
+        <h2 className="mb-8 font-display text-3xl font-extrabold">Goodness in every cup</h2>
+        <div className="flex max-w-sm flex-wrap justify-center gap-4">
+          {ids.map((id) => (
+            <Sticker key={id} id={id} />
+          ))}
+        </div>
+        <button
+          onClick={() => scrollTo("#shop")}
+          className="mt-9 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-brown shadow-[5px_5px_0_rgba(75,46,26,0.3)]"
+        >
+          Shop the lineup
+        </button>
+      </section>
+    );
+  }
   return (
-    <section
-      className={
-        staticLayout
-          ? "relative flex flex-col items-center px-1 py-16 text-center"
-          : "h-lineup pointer-events-none absolute inset-0 z-20"
-      }
-    >
-      <div
-        className={
-          staticLayout
-            ? "flex max-w-sm flex-wrap justify-center gap-4"
-            : "pointer-events-none absolute bottom-12 right-6 flex max-w-sm flex-wrap justify-end gap-3 md:bottom-16 md:right-12"
-        }
-      >
-        {["natural", "jaggery", "preservatives", "love"].map((id) => (
-          <Sticker
-            key={id}
-            id={id}
-            className={`lineup-sticker ${staticLayout ? "" : "pointer-events-auto scale-75 opacity-0"}`}
-          />
-        ))}
-      </div>
-      {staticLayout && (
-        <h2 className="mb-8 font-display text-3xl font-black text-brown">
+    <section className="h-lineup pointer-events-none absolute inset-0 z-20">
+      <div className="absolute left-1/2 top-[15%] flex -translate-x-1/2 flex-col items-center gap-4 text-center">
+        <h2 className="lineup-title font-display text-[clamp(1.8rem,3.6vw,3rem)] font-extrabold leading-none">
           Goodness in every cup
         </h2>
-      )}
-      <button
-        onClick={() => scrollTo("#shop")}
-        className={
-          staticLayout
-            ? "mt-9 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[5px_5px_0_rgba(75,46,26,0.3)]"
-            : "pointer-events-auto absolute bottom-12 left-6 rounded-full border-2 border-brown bg-orange px-8 py-4 font-bold text-white shadow-[6px_6px_0_rgba(75,46,26,0.3)] md:bottom-16 md:left-10"
-        }
-        aria-label={staticLayout ? "Shop the lineup" : "Open your cart"}
-      >
-        {staticLayout ? "Shop the lineup" : "Shop the lineup"}
-      </button>
+        <div className="flex gap-3 md:gap-5">
+          {ids.map((id) => (
+            <Sticker key={id} id={id} className="lineup-sticker pointer-events-auto opacity-0" />
+          ))}
+        </div>
+        <button
+          onClick={() => scrollTo("#shop")}
+          className="lineup-cta pointer-events-auto rounded-full border-2 border-brown bg-orange px-8 py-3.5 font-bold text-brown shadow-[6px_6px_0_rgba(75,46,26,0.3)] transition-transform hover:scale-[1.03]"
+        >
+          Shop the lineup
+        </button>
+      </div>
     </section>
   );
 }
 
 function StaticChapter({ children, id, className = "" }) {
   return (
-    <section
-      id={id}
-      className={`mobile-chapter relative min-h-[100svh] w-full px-5 pb-16 pt-24 md:px-10 ${className}`}
-    >
+    <section id={id} className={`mobile-chapter relative w-full px-5 pb-12 pt-24 md:px-10 ${className}`}>
       {children}
     </section>
   );
@@ -260,179 +251,121 @@ export default function Stage() {
   const desktop = useMedia(DESKTOP);
   const reducedMotion = useMedia(REDUCED);
   const stageRef = useRef(null);
-  const pouchRefs = useRef(Object.fromEntries(products.map(({ id }) => [id, null])));
+  const pouchRefs = useRef({});
 
   useLayoutEffect(() => {
     const root = stageRef.current;
     if (!root) return undefined;
-
     const mm = gsap.matchMedia();
 
     mm.add(DESKTOP, () => {
       const context = gsap.context(() => {
+        const q = (s) => Array.from(root.querySelectorAll(s));
         const pouches = products.map(({ id }) => pouchRefs.current[id]).filter(Boolean);
-        const hero = root.querySelector(".h-hero");
-        const story = root.querySelector(".h-story");
-        const spotlight = root.querySelector(".h-spot");
-        const lineup = root.querySelector(".h-lineup");
-        const heroBackdrop = root.querySelector(".hero-backdrop");
-        const storyBackdrop = root.querySelector(".story-backdrop");
-        const heroWords = Array.from(root.querySelectorAll(".hero-word"));
-        const storyWords = Array.from(root.querySelectorAll(".story-word"));
-        const panels = Array.from(root.querySelectorAll(".spot-panel"));
-        const blobs = Array.from(root.querySelectorAll(".spot-blob"));
-        const pedestals = root.querySelector(".lineup-pedestals");
-        const stickers = Array.from(root.querySelectorAll(".lineup-sticker"));
-        const splashes = Array.from(root.querySelectorAll(".story-splash"));
+        if (pouches.length !== products.length) return;
 
-        const heroPositions = [
-          { x: "-18vw", y: "-3vh", rotate: -18, scale: 0.82 },
-          { x: "-5.5vw", y: "4vh", rotate: -7, scale: 1 },
-          { x: "5.5vw", y: "5vh", rotate: 8, scale: 1 },
-          { x: "18vw", y: "-2vh", rotate: 17, scale: 0.82 },
-        ];
-        const storyPositions = [
-          { x: "-38vw", y: "-19vh", rotate: -12, scale: 0.7 },
-          { x: "-29vw", y: "-4vh", rotate: 9, scale: 0.72 },
-          { x: "-20vw", y: "11vh", rotate: -8, scale: 0.72 },
-          { x: "-11vw", y: "25vh", rotate: 12, scale: 0.68 },
-        ];
-        const lineupPositions = [
-          { x: "-37.5vw", y: "30vh", rotate: 0, scale: 0.82 },
-          { x: "-12.5vw", y: "27.5vh", rotate: 0, scale: 0.82 },
-          { x: "12.5vw", y: "28.7vh", rotate: 0, scale: 0.82 },
-          { x: "37.5vw", y: "26.3vh", rotate: 0, scale: 0.82 },
-        ];
-        const dockPositions = [
-          { x: "39vw", y: "-24vh", rotate: 0, scale: 0.46 },
-          { x: "39vw", y: "-8vh", rotate: 0, scale: 0.46 },
-          { x: "39vw", y: "8vh", rotate: 0, scale: 0.46 },
-          { x: "39vw", y: "24vh", rotate: 0, scale: 0.46 },
-        ];
+        const hero = q(".h-hero");
+        const story = q(".h-story");
+        const spot = q(".h-spot");
+        const lineup = q(".h-lineup");
+        const heroBackdrop = q(".hero-backdrop");
+        const storyBackdrop = q(".story-backdrop");
+        const heroWords = q(".hero-word");
+        const storyWords = q(".story-word");
+        const splashes = q(".story-splash");
+        const panels = q(".spot-panel");
+        const blobs = q(".spot-blob");
+        const pedestals = q(".ped");
+        const stickers = q(".lineup-sticker");
+        const lineupText = q(".lineup-title, .lineup-cta");
+        const intro = q(".pouch-intro");
+
+        // vw/vh -> px, live (resize pe invalidateOnRefresh se dobara calculate)
+        const vw = (n) => (n * root.clientWidth) / 100;
+        const vh = (n) => (n * root.clientHeight) / 100;
+        const place = (pos) => ({
+          x: (i) => vw(pos[i].x),
+          y: (i) => vh(pos[i].y),
+          rotation: (i) => pos[i].r,
+          scale: (i) => pos[i].s,
+        });
+        const lineupY = (i) => {
+          const half = (pouches[i].offsetHeight * LINEUP_SCALE) / 2;
+          // SVG ke neeche ~6% khali jagah hai, uska bhi hisaab
+          return root.clientHeight / 2 - vh(PEDESTAL_VH[i]) - half + half * 2 * 0.06;
+        };
 
         gsap.set(pouches, { xPercent: -50, yPercent: -50 });
-        gsap.set([story, spotlight, lineup, storyBackdrop, pedestals], { opacity: 0 });
-        gsap.set(hero, { opacity: 1 });
-        gsap.set(panels, { opacity: 0 });
-        gsap.set(blobs, { opacity: 0 });
+        gsap.set([...story, ...spot, ...lineup, ...storyBackdrop, ...splashes, ...panels, ...blobs, ...pedestals], { opacity: 0 });
+        gsap.set(panels, { yPercent: -50, x: -30 });
+        gsap.set(pedestals, { yPercent: 100 });
+        gsap.set(stickers, { scale: 0.6, rotation: -12 });
+        gsap.set(lineupText, { y: 20 });
 
-        gsap.fromTo(
-          pouches,
-          { y: "110vh", opacity: 0 },
-          {
-            x: (index) => heroPositions[index].x,
-            y: (index) => heroPositions[index].y,
-            rotate: (index) => heroPositions[index].rotate,
-            scale: (index) => heroPositions[index].scale,
-            opacity: 1,
-            duration: 1.1,
-            ease: "power3.out",
-            stagger: 0.08,
-          }
-        );
-        gsap.fromTo(
-          heroWords,
-          { yPercent: 115, opacity: 0 },
-          {
-            yPercent: 0,
-            opacity: 1,
-            duration: 0.9,
-            ease: "power3.out",
-            stagger: 0.08,
-            delay: 0.12,
-          }
-        );
+        // 1) Page-load intro (alag wrapper pe, scroll timeline se conflict nahi)
+        gsap.from(intro, { y: () => root.clientHeight * 0.7, opacity: 0, duration: 1.1, ease: "power3.out", stagger: 0.08 });
+        gsap.from(heroWords, { yPercent: 115, duration: 1, ease: "power4.out", stagger: 0.08, delay: 0.1 });
+        gsap.from(".h-hero > *", { opacity: 0, y: 16, duration: 0.8, ease: "power2.out", stagger: 0.12, delay: 0.7 });
 
-        const timeline = gsap.timeline();
-        timeline.to(
-          pouches,
-          {
-            x: (index) => storyPositions[index].x,
-            y: (index) => storyPositions[index].y,
-            rotate: (index) => storyPositions[index].rotate,
-            scale: (index) => storyPositions[index].scale,
-            duration: 0.8,
-          },
-          0.8
-        );
-        timeline.to([hero, heroBackdrop], { opacity: 0, duration: 0.35 }, 0.8);
-        timeline.to([story, storyBackdrop], { opacity: 1, duration: 0.35 }, 0.8);
-        timeline.to(storyWords, { opacity: 1, stagger: 0.055, duration: 0.18 }, 0.88);
-        timeline.to(splashes, { opacity: 0.9, y: "8vh", stagger: 0.08, duration: 0.35 }, 0.9);
-        timeline.to(storyWords, { opacity: 0, stagger: 0.035, duration: 0.16 }, 1.65);
-        timeline.to(splashes, { opacity: 0, y: 0, duration: 0.3 }, 1.7);
-        timeline.to([story, storyBackdrop], { opacity: 0, duration: 0.35 }, 2);
-        timeline.to(spotlight, { opacity: 1, duration: 0.35 }, 2);
+        // 2) Scroll timeline
+        const tl = gsap.timeline({ defaults: { ease: "power2.inOut" } });
+        tl.set(pouches, { ...place(HERO), immediateRender: true }, 0);
 
-        products.forEach((product, activeIndex) => {
-          const start = 2.2 + activeIndex * 0.88;
-          timeline.to(
+        // hero -> story
+        tl.to(pouches, { ...place(STORY), duration: 0.9 }, 0.8);
+        tl.to([...hero, ...heroBackdrop], { opacity: 0, duration: 0.35 }, 0.8);
+        tl.to([...story, ...storyBackdrop], { opacity: 1, duration: 0.35 }, 0.95);
+        tl.to(storyWords, { opacity: 1, stagger: 0.07, duration: 0.2, ease: "none" }, 1.05);
+        tl.to(splashes, { opacity: 0.85, y: () => vh(5), stagger: 0.08, duration: 0.5 }, 1.0);
+
+        // story -> spotlight
+        tl.to([...story, ...storyBackdrop, ...splashes], { opacity: 0, duration: 0.4 }, 2.2);
+        tl.to(spot, { opacity: 1, duration: 0.3 }, 2.35);
+
+        products.forEach((_, active) => {
+          const t = 2.4 + active * 0.95;
+          tl.to(
             pouches,
             {
-              x: (index) =>
-                index === activeIndex ? "11vw" : dockPositions[index].x,
-              y: (index) =>
-                index === activeIndex ? "0vh" : dockPositions[index].y,
-              rotate: (index) =>
-                index === activeIndex ? 0 : dockPositions[index].rotate,
-              scale: (index) =>
-                index === activeIndex ? 1.16 : dockPositions[index].scale,
-              duration: 0.38,
+              x: (i) => vw(i === active ? SPOT_X : DOCK_X),
+              y: (i) => (i === active ? 0 : vh(DOCK_Y[i])),
+              rotation: 0,
+              scale: (i) => (i === active ? 1.4 : 0.42),
+              duration: 0.55,
             },
-            start
+            t
           );
-          timeline.to(
+          tl.to(
             panels,
-            {
-              opacity: (index) => (index === activeIndex ? 1 : 0),
-              duration: 0.2,
-            },
-            start + 0.12
+            { opacity: (i) => (i === active ? 1 : 0), x: (i) => (i === active ? 0 : -30), duration: 0.3 },
+            t + 0.2
           );
-          timeline.to(
-            blobs,
-            {
-              opacity: (index) => (index === activeIndex ? 0.28 : 0),
-              duration: 0.24,
-            },
-            start + 0.08
-          );
+          tl.to(blobs, { opacity: (i) => (i === active ? 1 : 0), duration: 0.35, ease: "none" }, t + 0.1);
         });
 
-        timeline.to(
+        // spotlight -> lineup
+        const L = 2.4 + products.length * 0.95;
+        tl.to(
           pouches,
-          {
-            x: (index) => lineupPositions[index].x,
-            y: (index) => lineupPositions[index].y,
-            rotate: (index) => lineupPositions[index].rotate,
-            scale: (index) => lineupPositions[index].scale,
-            duration: 0.65,
-          },
-          5.85
+          { x: (i) => vw(LINEUP_X(i)), y: (i) => lineupY(i), rotation: 0, scale: LINEUP_SCALE, duration: 0.75 },
+          L
         );
-        timeline.to([spotlight, ...blobs], { opacity: 0, duration: 0.35 }, 5.85);
-        timeline.to(lineup, { opacity: 1, duration: 0.35 }, 5.95);
-        timeline.to(pedestals, { opacity: 1, duration: 0.35 }, 5.95);
-        timeline.to(
-          stickers,
-          {
-            opacity: 1,
-            scale: 1,
-            rotate: (index) => [-6, 6, -4, 5][index],
-            duration: 0.3,
-            stagger: 0.1,
-          },
-          6.05
-        );
+        tl.to([...spot, ...panels, ...blobs], { opacity: 0, duration: 0.3 }, L);
+        tl.to(lineup, { opacity: 1, duration: 0.3 }, L + 0.15);
+        tl.to(pedestals, { opacity: 1, yPercent: 0, stagger: 0.08, duration: 0.5, ease: "back.out(1.4)" }, L + 0.1);
+        tl.to(lineupText, { y: 0, opacity: 1, stagger: 0.1, duration: 0.4 }, L + 0.3);
+        tl.to(stickers, { opacity: 1, scale: 1, rotation: (i) => [-6, 6, -4, 5][i], stagger: 0.1, duration: 0.45, ease: "back.out(2)" }, L + 0.4);
+        tl.to({}, { duration: 0.5 }); // thoda hold, taaki lineup pe ruk ke dikhe
 
         ScrollTrigger.create({
           trigger: root,
           start: "top top",
-          end: "+=500%",
+          end: "+=550%",
           pin: true,
-          scrub: 1,
+          scrub: 0.6,
           anticipatePin: 1,
-          animation: timeline,
+          invalidateOnRefresh: true,
+          animation: tl,
         });
       }, root);
 
@@ -442,24 +375,14 @@ export default function Stage() {
     mm.add(MOBILE, () => {
       const context = gsap.context(() => {
         root.querySelectorAll(".mobile-chapter").forEach((chapter) => {
-          gsap.fromTo(
-            chapter,
-            { y: 24, opacity: 0.65 },
-            {
-              y: 0,
-              opacity: 1,
-              ease: "none",
-              scrollTrigger: {
-                trigger: chapter,
-                start: "top 85%",
-                end: "top 50%",
-                scrub: true,
-              },
-            }
-          );
+          gsap.from(chapter, {
+            y: 28,
+            opacity: 0.4,
+            ease: "none",
+            scrollTrigger: { trigger: chapter, start: "top 90%", end: "top 55%", scrub: true },
+          });
         });
       }, root);
-
       return () => context.revert();
     });
 
@@ -472,37 +395,65 @@ export default function Stage() {
         ref={stageRef}
         id="stage"
         className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-white"
+        style={{ "--pw": "clamp(100px, min(14vw, 24vh), 230px)" }}
       >
         <div className="pointer-events-none absolute inset-0 z-0 select-none" aria-hidden="true">
-          <h1 className="hero-backdrop absolute left-1/2 top-[43%] w-[96%] -translate-x-1/2 -translate-y-1/2 text-center font-display text-[clamp(3.5rem,12vw,10rem)] font-black leading-[0.82] text-brown">
-            {["SIP", "WELL,", "LIVE", "WELL"].map((word, index) => (
-              <span className="hero-word inline-block" key={word}>
-                {word}
-                {index < 3 ? " " : ""}
+          <h1 className="hero-backdrop absolute left-1/2 top-[46%] w-[96%] -translate-x-1/2 -translate-y-1/2 text-center font-display text-[clamp(3.5rem,12.5vw,11rem)] font-extrabold leading-[0.84] tracking-tight text-brown">
+            {["SIP WELL,", "LIVE WELL"].map((line) => (
+              <span className="block" key={line}>
+                {line.split(" ").map((w) => (
+                  <span key={w} className="mr-[0.18em] inline-block overflow-hidden pb-[0.06em] align-bottom last:mr-0">
+                    <span className="hero-word inline-block">{w}</span>
+                  </span>
+                ))}
               </span>
             ))}
           </h1>
-          <h2 className="story-backdrop absolute right-[7%] top-[42%] w-[56%] -translate-y-1/2 text-right font-display text-[clamp(2rem,6vw,5rem)] font-black leading-[0.9] text-brown">
-            {"WHOLESOME PREMIXES FOR EVERY MOOD".split(" ").map((word) => (
-              <span className="story-word mr-[0.22em] inline-block opacity-0" key={word}>
-                {word}
+          <h2 className="story-backdrop absolute right-[7%] top-[40%] w-[52%] -translate-y-1/2 text-right font-display text-[clamp(2rem,5.6vw,5rem)] font-extrabold leading-[0.92] tracking-tight text-brown">
+            {"WHOLESOME PREMIXES FOR EVERY MOOD".split(" ").map((w) => (
+              <span className="story-word mr-[0.22em] inline-block opacity-0" key={w}>
+                {w}
               </span>
             ))}
           </h2>
-          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.rose }} />
-          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.choco }} />
-          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.haldi }} />
-          <div className="spot-blob absolute left-[56%] top-1/2 h-[min(68vh,620px)] w-[min(68vh,620px)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]" style={{ backgroundColor: colorById.makhana }} />
-          <svg
-            className="lineup-pedestals absolute bottom-[2vh] left-0 h-[13vh] w-full"
-            viewBox="0 0 900 120"
-            preserveAspectRatio="none"
-          >
-            <rect x="12.5" y="60" width="200" height="60" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
-            <rect x="237.5" y="36" width="200" height="84" rx="12" fill="#fc7305" stroke="#4b2e1a" strokeWidth="3" />
-            <rect x="462.5" y="48" width="200" height="72" rx="12" fill="#63920e" stroke="#4b2e1a" strokeWidth="3" />
-            <rect x="687.5" y="24" width="200" height="96" rx="12" fill="#e1ac6e" stroke="#4b2e1a" strokeWidth="3" />
-          </svg>
+        
+<div className="absolute left-[3vw] top-[22vh] w-[min(42vw,520px)]">
+  {/* Large orange brush stroke */}
+  <Splash
+    color="#fc7305"
+    className="story-splash w-full"
+  />
+
+  {/* Medium green brush stroke */}
+  <Splash
+    color="#63920e"
+    className="story-splash absolute left-[5%] top-[22%] w-[82%]"
+  />
+
+  {/* Small beige brush stroke */}
+  <Splash
+    color="#e1ac6e"
+    className="story-splash absolute left-[10%] top-[42%] w-[64%]"
+  />
+</div>
+
+          {products.map((p) => (
+            <div
+              key={p.id}
+              className="spot-blob absolute top-1/2 h-[min(80vh,720px)] w-[min(80vh,720px)] -translate-y-1/2 -translate-x-1/2 rounded-full"
+              style={{
+                left: `calc(50% + ${SPOT_X}vw)`,
+                background: `radial-gradient(circle, ${colorById[p.id]}66 0%, ${colorById[p.id]}00 68%)`,
+              }}
+            />
+          ))}
+          {PEDESTAL_VH.map((h, i) => (
+            <div
+              key={i}
+              className={`ped absolute bottom-0 rounded-t-3xl border-[3px] border-b-0 border-brown ${PEDESTAL_BG[i]}`}
+              style={{ height: `${h}vh`, width: "19vw", left: `calc(50% + ${LINEUP_X(i)}vw - 9.5vw)` }}
+            />
+          ))}
         </div>
         <PouchLayer refs={pouchRefs.current} />
         <HeroChapter />

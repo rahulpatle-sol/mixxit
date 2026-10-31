@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { products } from "./data";
+import { allProducts } from "./data";
 
 const Ctx = createContext(null);
 export const useStore = () => useContext(Ctx);
@@ -20,7 +20,8 @@ export function StoreProvider({ children }) {
     []
   );
 
-  const lines = useMemo(() => products.filter((p) => items[p.id]).map((p) => ({ ...p, qty: items[p.id] })), [items]);
+  // allProducts: fruit snacks bhi cart me dikhne chahiye
+  const lines = useMemo(() => allProducts.filter((p) => items[p.id]).map((p) => ({ ...p, qty: items[p.id] })), [items]);
   const count = lines.reduce((a, l) => a + l.qty, 0);
   const total = lines.reduce((a, l) => a + l.qty * l.price, 0);
 
@@ -36,6 +37,11 @@ export function StoreProvider({ children }) {
 }
 
 export const scrollTo = (sel) => {
-  if (window.__lenis) window.__lenis.scrollTo(sel, { offset: -80 });
+  if (sel === "body" || sel === "#stage") {
+    if (window.__lenis) window.__lenis.scrollTo(0);
+    else window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  if (window.__lenis) window.__lenis.scrollTo(sel, { offset: -96 });
   else document.querySelector(sel)?.scrollIntoView({ behavior: "smooth" });
 };

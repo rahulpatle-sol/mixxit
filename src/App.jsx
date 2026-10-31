@@ -14,15 +14,26 @@ import LoginModal from "./components/LoginModal";
 
 export default function App() {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.8 });
+    // Font/image load hone ke baad layout badalta hai, isliye triggers refresh karte hain
+    const refresh = () => ScrollTrigger.refresh();
+    document.fonts?.ready.then(refresh);
+    window.addEventListener("load", refresh);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return () => window.removeEventListener("load", refresh);
+    }
+
+    // Smooth scroll: Lenis ek hi jagah smoothing karta hai. scrub values chhote rakhe hain
+    // taaki double smoothing (laggy feel) na ho.
+    const lenis = new Lenis({ duration: 1.15, smoothWheel: true });
     window.__lenis = lenis;
     lenis.on("scroll", ScrollTrigger.update);
-    const tick = (t) => lenis.raf(t * 1000);
+    const tick = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
-    ScrollTrigger.refresh();
+
     return () => {
+      window.removeEventListener("load", refresh);
       gsap.ticker.remove(tick);
       lenis.destroy();
       window.__lenis = undefined;
@@ -35,7 +46,7 @@ export default function App() {
       <main>
         <Stage />
         <ShopSection />
-        <FruitSection />
+        {/* <FruitSection /> */}
         <StoryReveal />
       </main>
       <Footer />

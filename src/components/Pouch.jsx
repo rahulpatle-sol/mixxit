@@ -1,131 +1,111 @@
-import { useId, useState } from "react";
-import { ASSETS } from "../assets";
+import { forwardRef, useId, useState } from "react";
+import { POUCH_IMAGES } from "../assets";
 import { colorById } from "../data";
 
 const INK = "#4b2e1a";
 
-function SvgPouch({ label, color, className = "", style, ...rest }) {
-  const gradientId = `pouch-gradient-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+// Har product ka apna colour theme. Real PNG aate hi ye use nahi hota.
+const THEMES = {
+  rose: { top: "#fff3f6", mid: "#f6b4c6", band: "#c2185b", bandText: "#ffffff", drink: "#ef7d9f", name: "Rose Petal" },
+  choco: { top: "#fbf2e6", mid: "#d8b28a", band: "#5b3220", bandText: "#ffffff", drink: "#6b3a22", name: "Choco Dryfruit" },
+  haldi: { top: "#ffe58a", mid: "#fdb934", band: "#e8801a", bandText: "#ffffff", drink: "#fcd34d", name: "Haldi" },
+  makhana: { top: "#fffdf7", mid: "#f1e7cf", band: "#e6d9b8", bandText: INK, drink: "#f3dc98", name: "Makhana" },
+};
+
+function themeFor(id, color) {
+  if (THEMES[id]) return THEMES[id];
+  const c = color ?? colorById[id] ?? "#e1ac6e";
+  return { top: "#fff8ee", mid: c, band: INK, bandText: "#ffffff", drink: c, name: id };
+}
+
+const SvgPouch = forwardRef(function SvgPouch({ id, label, color, className = "", style }, ref) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const t = themeFor(id, color);
+  const body = "M30 38 Q30 26 42 26 H258 Q270 26 270 38 L279 372 Q281 408 250 410 H50 Q19 408 21 372 Z";
 
   return (
     <svg
-      viewBox="0 0 200 280"
+      ref={ref}
+      viewBox="0 0 300 440"
       className={className}
       style={style}
       role="img"
       aria-label={`${label} premix pouch`}
       fill="none"
-      {...rest}
     >
       <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor="#000000" stopOpacity="0.12" />
+        <linearGradient id={`g${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={t.top} />
+          <stop offset="0.62" stopColor={t.mid} />
+          <stop offset="1" stopColor={t.mid} />
         </linearGradient>
+        <linearGradient id={`s${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <clipPath id={`c${uid}`}>
+          <path d={body} />
+        </clipPath>
       </defs>
-      <path
-        d="M20 20 L180 20 L190 40 L184 260 Q100 276 16 260 L10 40 Z"
-        fill={`url(#${gradientId})`}
-        stroke={INK}
-        strokeWidth="4"
-        strokeLinejoin="round"
-      />
-      <path d="M14 34 H186" stroke={INK} strokeWidth="3" strokeDasharray="6 5" />
-      <circle cx="100" cy="116" r="46" fill="#fdfaf5" stroke={INK} strokeWidth="4" />
-      <text
-        x="100"
-        y="124"
-        textAnchor="middle"
-        fontFamily="Kaushan Script, cursive"
-        fontSize="32"
-        fill={INK}
-      >
-        Mixxit
+
+      <ellipse cx="150" cy="424" rx="108" ry="10" fill={INK} opacity="0.16" />
+      <path d={body} fill={`url(#g${uid})`} />
+
+      <g clipPath={`url(#c${uid})`}>
+        {/* bottom name band */}
+        <rect x="0" y="322" width="300" height="100" fill={t.band} />
+        {/* top zip seal */}
+        <rect x="0" y="26" width="300" height="38" fill="#fff" opacity="0.38" />
+        <path d="M20 36H280M20 46H280M20 56H280" stroke={INK} strokeOpacity="0.14" strokeWidth="2" />
+        {/* gloss */}
+        <path d="M38 40 L118 40 L84 410 L34 410 Z" fill={`url(#s${uid})`} />
+      </g>
+
+      {/* logo */}
+      <text x="150" y="128" textAnchor="middle" fontFamily="'Kaushan Script', cursive" fontSize="54" fill={INK}>
+        Mixx<tspan fill="#fc7305">it</tspan>
       </text>
-      <rect
-        x="30"
-        y="186"
-        width="140"
-        height="40"
-        rx="20"
-        fill="#fdfaf5"
-        stroke={INK}
-        strokeWidth="3"
-      />
-      <text
-        x="100"
-        y="212"
-        textAnchor="middle"
-        fontFamily="Kaushan Script, cursive"
-        fontSize="24"
-        fill={INK}
-      >
-        {label}
+      <path d="M205 82 q18 -22 36 -8 q-12 20 -36 8Z" fill="#63920e" />
+
+      {/* mug + steam */}
+      <path d="M118 212 C 96 190, 150 178, 132 150 C 120 130, 150 120, 160 100" stroke={t.drink} strokeWidth="10" strokeLinecap="round" opacity="0.9" />
+      <rect x="112" y="214" width="78" height="64" rx="12" fill="#fff" opacity="0.92" stroke={INK} strokeOpacity="0.35" strokeWidth="2" />
+      <rect x="118" y="222" width="66" height="50" rx="9" fill={t.drink} />
+      <path d="M190 228 q26 0 26 22 q0 20 -26 20" stroke={INK} strokeOpacity="0.45" strokeWidth="6" strokeLinecap="round" />
+
+      <text x="150" y="342" textAnchor="middle" fontFamily="'DM Sans', sans-serif" fontSize="11" fontWeight="700" letterSpacing="2.5" fill={t.bandText} opacity="0.85">
+        JAGGERY-BASED
       </text>
-      <text
-        x="100"
-        y="246"
-        textAnchor="middle"
-        fontFamily="DM Sans, sans-serif"
-        fontSize="12"
-        fontWeight="700"
-        fill={INK}
-      >
-        jaggery premix
+      <text x="150" y="376" textAnchor="middle" fontFamily="'DM Sans', sans-serif" fontSize="25" fontWeight="700" fill={t.bandText}>
+        {t.name === id ? label : t.name}
       </text>
+      <text x="150" y="398" textAnchor="middle" fontFamily="'DM Sans', sans-serif" fontSize="12" fontWeight="700" letterSpacing="3" fill={t.bandText} opacity="0.85">
+        PREMIX
+      </text>
+
+      <path d={body} stroke={INK} strokeOpacity="0.3" strokeWidth="2" />
     </svg>
   );
-}
+});
 
-export default function Pouch({ id, label, color, className = "", style, ...rest }) {
+const Pouch = forwardRef(function Pouch({ id, label, color, className = "", style }, ref) {
   const [broken, setBroken] = useState(false);
-  const src = ASSETS[id];
-  const fallbackColor = color ?? colorById[id];
+  const src = POUCH_IMAGES[id];
 
-  if (broken) {
+  if (src && !broken) {
     return (
-      <SvgPouch
-        label={label}
-        color={fallbackColor}
-        className={className}
+      <img
+        ref={ref}
+        src={src}
+        alt={`${label} premix pouch`}
+        draggable={false}
+        onError={() => setBroken(true)}
+        className={`object-contain ${className}`}
         style={style}
-        {...rest}
       />
     );
   }
+  return <SvgPouch ref={ref} id={id} label={label} color={color} className={className} style={style} />;
+});
 
-  return (
-    <div
-      className={`relative overflow-hidden rounded-2xl border border-brown/20 bg-gradient-to-b from-brown/10 to-brown/5 shadow-[4px_4px_0_rgba(75,46,26,0.15)] ${className}`}
-      style={style}
-      {...rest}
-    >
-      <img
-        src={src}
-        alt={`${label} premix pouch`}
-        className="w-full h-full object-cover"
-        onError={() => setBroken(true)}
-      />
-      <div className="absolute inset-0 bg-brown/20"></div>
-      <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="w-full max-w-xs">
-          <div className="flex items-center justify-center mb-4">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-white/95 border border-brown/20 flex items-center justify-center shadow-md">
-                <span className="text-brown font-bold italic text-[clamp(1.1rem,6vw,1.9rem)] leading-tight">
-                  Mixxit
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/95 backdrop-blur-sm border border-brown/20 rounded-full px-4 py-1.5">
-            <span className="text-brown font-bold italic text-lg">{label}</span>
-          </div>
-          <p className="mt-2 text-center text-brown/70 text-sm font-bold uppercase tracking-wider">
-            jaggery premix
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default Pouch;

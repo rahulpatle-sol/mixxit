@@ -8,7 +8,7 @@
   --color-cream: #fdfaf5;
   --color-paper: #ffffff;
 
-  --font-display: "DM Sans", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif;
   --font-script: "Kaushan Script", cursive;
   --font-sans: "DM Sans", system-ui, sans-serif;
 }
@@ -18,11 +18,12 @@ body {
   background: var(--color-paper);
   color: var(--color-brown);
   font-family: var(--font-sans);
-  overflow-x: hidden;
 }
 
+/* clip (hidden nahi): hidden se pin/sticky toot sakta hai */
 body {
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 :focus-visible {
@@ -30,20 +31,7 @@ body {
   outline-offset: 3px;
 }
 
-.will-change-transform {
-  will-change: transform;
-}
-.will-change-opacity {
-  will-change: opacity;
-}
-
-/* Lenis smooth scroll */
-html.lenis,
-html.lenis.smooth,
-html.lenis.smooth body {
-  overflow: hidden !important;
-}
-html.lenis body,
-html.lenis.smooth body {
-  overflow: visible !important;
+::selection {
+  background: var(--color-orange);
+  color: #fff;
 }

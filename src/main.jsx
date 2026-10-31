@@ -2,7 +2,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import "lenis/dist/lenis.css";
 import "./index.css";
-import { preloadImages } from "./assets";
 import App from "./App.jsx";
 
 class ErrorBoundary extends React.Component {
@@ -16,7 +15,10 @@ class ErrorBoundary extends React.Component {
         <div style={{ padding: "2rem", fontFamily: "system-ui, sans-serif", color: "#4B2E1A" }}>
           <h2 style={{ color: "#FC7305" }}>Something went wrong</h2>
           <pre>{this.state.error?.message ?? String(this.state.error)}</pre>
-          <button onClick={() => this.setState({ hasError: false, error: null })} style={{ marginTop: "1rem", padding: "0.6rem 1.2rem", background: "#FC7305", color: "#fff", border: "none", borderRadius: "999px", cursor: "pointer" }}>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{ marginTop: "1rem", padding: "0.6rem 1.2rem", background: "#FC7305", color: "#fff", border: "none", borderRadius: "999px", cursor: "pointer" }}
+          >
             Try again
           </button>
         </div>
@@ -25,8 +27,6 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
-preloadImages();
 
 createRoot(document.getElementById("root")).render(
   <ErrorBoundary>

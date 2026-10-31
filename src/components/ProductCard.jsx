@@ -1,51 +1,74 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { motion } from "motion/react";
+import { PHOTOS } from "../assets";
 import { useStore } from "../store";
+import Img from "./Img";
 import Pouch from "./Pouch";
-import StickerGroup from "./Sticker";
+import { StickerGroup } from "./Sticker";
 
+// Arch-shaped card. GSAP entrance outer div pe (.p-card), hover motion andar wale article pe,
+// taaki dono ek hi element ka transform na chhedein.
 export default function ProductCard({ p, className = "" }) {
   const { add } = useStore();
   const [done, setDone] = useState(false);
-  const mrp = Math.round(p.price * 1.4);
+  const photo = PHOTOS[p.id];
+  const mrp = Math.round(p.price * 1.25);
+  const off = Math.round((1 - p.price / mrp) * 100);
 
   const onAdd = () => {
     add(p.id);
     setDone(true);
-    setTimeout(() => setDone(false), 1200);
+    setTimeout(() => setDone(false), 1400);
   };
 
   return (
-    <motion.article
-      whileHover={{ y: -8 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 300, damping: 18 }}
-      className={`p-card overflow-hidden rounded-2xl border border-brown/20 bg-white shadow-[4px_4px_0_rgba(75,46,26,0.15)] ${className}`}
-    >
-      <div className="relative h-48 bg-brown/5 flex items-center justify-center overflow-hidden">
-        <Pouch id={p.id} label={p.label} className="h-full w-full object-contain mx-auto" />
-      </div>
-      <div className="p-4">
-        <h3 className="font-script text-2xl text-brown leading-tight">{p.name}</h3>
-        <p className="mt-1 text-sm text-brown/60">{p.desc}</p>
-        <div className="mt-4 flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold text-brown">₹{p.price}</span>
-            <span className="ml-1.5 text-sm text-brown/40 line-through">₹{mrp}</span>
-          </div>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+    <div className={`p-card ${className}`}>
+      <motion.article initial="rest" whileHover="hover" className="flex h-full flex-col text-center">
+        <div
+          className="relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-t-[999px] px-6 pb-8 pt-12"
+          style={{ background: `${p.color}2e` }}
+        >
+          {photo ? (
+            <motion.div
+              variants={{ rest: { scale: 1 }, hover: { scale: 1.05 } }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="h-full w-full overflow-hidden rounded-t-[999px]"
+            >
+              <Img src={photo} alt={p.name} className="h-full w-full object-cover" />
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={{ rest: { y: 0, rotate: 0 }, hover: { y: -12, rotate: -3 } }}
+              transition={{ type: "spring", stiffness: 220, damping: 14 }}
+              className="w-[66%] will-change-transform"
+            >
+              <Pouch id={p.id} label={p.label} color={p.color} className="h-auto w-full" />
+            </motion.div>
+          )}
+        </div>
+
+        <div className="flex flex-1 flex-col items-center pt-5">
+          <h3 className="font-display text-lg font-extrabold leading-tight">{p.name}</h3>
+          <p className="mt-1 font-script text-lg text-brown/80">{p.tag}</p>
+          <p className="mt-2 flex items-baseline gap-2 font-bold">
+            <span>₹{p.price}</span>
+            <span className="text-sm font-normal text-brown/50 line-through">₹{mrp}</span>
+            <span className="text-sm text-green">{off}% off</span>
+          </p>
+          <StickerGroup ids={p.stickers} size="chip" className="mt-3 justify-center" />
+          <button
             onClick={onAdd}
-            className="inline-flex items-center gap-1.5 rounded-full border-2 border-brown bg-brown px-5 py-2 text-sm font-bold text-white transition-all hover:bg-brown/90"
+            className="mt-auto w-full rounded-lg border-2 border-brown py-2.5 font-bold transition-colors hover:border-orange hover:bg-orange"
+            aria-label={`Add ${p.name} to cart`}
           >
-            {done ? "Added" : <><Plus size={16} /> Add to cart</>}
-          </motion.button>
+            <span className="inline-flex items-center justify-center gap-1.5">
+              {done ? <Check size={18} /> : <Plus size={18} />}
+              {done ? "Added to cart" : "Add to cart"}
+            </span>
+          </button>
         </div>
-        <div className="mt-3 flex justify-center gap-2">
-          <StickerGroup ids={p.stickers} gap="1.5" small />
-        </div>
-      </div>
-    </motion.article>
+      </motion.article>
+    </div>
   );
 }
