@@ -17,9 +17,11 @@ import { LOGO } from "../assets";
 import { scrollTo, useStore } from "../store";
 
 const navItems = [
-  { label: "Home", target: "body" },
-  { label: "Shop", target: "#shop" },
-  { label: "Our Story", target: "#story-reveal" },
+  { label: "Home", target: "/" },
+  { label: "Shop", target: "/shop" },
+  { label: "About", target: "/about" },
+  { label: "Cart", target: "/cart" },
+  { label: "Contact", target: "/contact" },
 ];
 
 const iconButton =
@@ -32,9 +34,20 @@ export default function Navbar() {
 
   const handleNav = (target) => {
     setMenuOpen(false);
-    if (target === "body") {
+    if (target.startsWith("/")) {
+      navigate(target);
+      if (window.__lenis) {
+        window.__lenis.scrollTo(0);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } else if (target === "body") {
       navigate("/");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.__lenis) {
+        window.__lenis.scrollTo(0);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } else {
       scrollTo(target);
     }

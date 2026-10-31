@@ -13,20 +13,20 @@ export default function Footer() {
 
   const links = {
     Explore: [
-      ["Home", "body"],
-      ["Our Story", "#story-reveal"],
-      ["Products", "#shop"],
-      ["Contact", "https://www.instagram.com/mixxit_official/"],
+      ["Home", "/"],
+      ["Our Story", "/about"],
+      ["Products", "/shop"],
+      ["Contact", "/contact"],
       ["Privacy Policy", "/privacy-policy"],
       ["Refund Policy", "/refund-policy"],
       ["Shipping Policy", "/shipping-policy"],
       ["Terms of Service", "/terms-of-service"],
     ],
     Products: [
-      ["Makhana Premix", "#shop"],
-      ["Haldi Premix", "#shop"],
-      ["Choco Dryfruit", "#shop"],
-      ["Rose Petal", "#shop"],
+      ["Makhana Premix", "/shop"],
+      ["Haldi Premix", "/shop"],
+      ["Choco Dryfruit", "/shop"],
+      ["Rose Petal", "/shop"],
     ],
   };
 

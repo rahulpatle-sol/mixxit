@@ -3,8 +3,8 @@ import { scrollTo } from "../store";
 
 export default function PolicyLayout({ children, title }) {
   return (
-    <section className="min-h-[70vh] px-5 pt-24 pb-24 md:px-10 md:pt-32">
-      <nav className="mb-10 flex items-center gap-2">
+    <section className="min-h-[70vh] px-5 pt-24 pb-32 md:px-10 md:pt-32">
+      <nav className="mb-12 flex items-center gap-2">
         <button
           onClick={() => scrollTo("body")}
           className="inline-flex items-center gap-1 text-brown hover:text-orange transition-colors"
@@ -19,7 +19,7 @@ export default function PolicyLayout({ children, title }) {
         {title}
       </h1>
 
-      <div className="prose prose-brown max-w-3xl mx-auto text-brown/90 leading-relaxed">
+      <div className="readable prose prose-brown max-w-3xl mx-auto text-brown/90 leading-relaxed">
         {children}
       </div>
     </section>
