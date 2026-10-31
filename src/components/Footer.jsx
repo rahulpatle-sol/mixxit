@@ -2,7 +2,9 @@
 
 
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 import { scrollTo } from "../store";
+import { LOGO } from "../assets";
 
 const VIDEO = "/images/footer.mp4";
 
@@ -15,6 +17,10 @@ export default function Footer() {
       ["Our Story", "#story-reveal"],
       ["Products", "#shop"],
       ["Contact", "https://www.instagram.com/mixxit_official/"],
+      ["Privacy Policy", "/privacy-policy"],
+      ["Refund Policy", "/refund-policy"],
+      ["Shipping Policy", "/shipping-policy"],
+      ["Terms of Service", "/terms-of-service"],
     ],
     Products: [
       ["Makhana Premix", "#shop"],
@@ -44,9 +50,19 @@ export default function Footer() {
                   e.preventDefault();
                   scrollTo("body");
                 }}
-                className="inline-block font-script text-6xl tracking-tight text-[#f7d59b] sm:text-7xl"
+                className="inline-block"
               >
-                Mixxit<span className="text-[#ed9b43]">.</span>
+                {LOGO ? (
+                  <img
+                    src={LOGO}
+                    alt="Mixxit"
+                    className="h-12 w-auto sm:h-16 object-contain"
+                  />
+                ) : (
+                  <span className="font-script text-6xl tracking-tight text-[#f7d59b] sm:text-7xl">
+                    Mixxit<span className="text-[#ed9b43]">.</span>
+                  </span>
+                )}
               </a>
 
               <p className="mt-4 max-w-xs text-sm leading-7 text-white/60">
@@ -66,25 +82,51 @@ export default function Footer() {
                     </h3>
 
                     <ul className="space-y-3">
-                      {items.map(([name, href]) => (
-                        <li key={name}>
-              <a
-                href={href}
-                target={href.startsWith("http") ? "_blank" : undefined}
-                rel={href.startsWith("http") ? "noreferrer" : undefined}
-                onClick={(e) => {
-                  if (!href.startsWith("http")) {
-                    e.preventDefault();
-                    scrollTo(href);
-                  }
-                }}
-                className="group inline-flex items-center gap-2 text-sm text-white/75 transition-colors hover:text-[#f4c889]"
-              >
-                <span className="h-1 w-1 rounded-full bg-[#d89b53] opacity-0 transition-all group-hover:opacity-100" />
-                {name}
-              </a>
-                        </li>
-                      ))}
+                      {items.map(([name, href]) => {
+                        const isExternal = href.startsWith("http");
+                        const isPage = href.startsWith("/") && !href.startsWith("#");
+                        const isSection = href.startsWith("#");
+                        return (
+                          <li key={name}>
+                            {isExternal ? (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="group inline-flex items-center gap-2 text-sm text-white/75 transition-colors hover:text-[#f4c889]"
+                              >
+                                <span className="h-1 w-1 rounded-full bg-[#d89b53] opacity-0 transition-all group-hover:opacity-100" />
+                                {name}
+                              </a>
+                            ) : isPage ? (
+                              <Link
+                                to={href}
+                                className="group inline-flex items-center gap-2 text-sm text-white/75 transition-colors hover:text-[#f4c889]"
+                              >
+                                <span className="h-1 w-1 rounded-full bg-[#d89b53] opacity-0 transition-all group-hover:opacity-100" />
+                                {name}
+                              </Link>
+                            ) : (
+                              <a
+                                href={href}
+                                onClick={(e) => {
+                                  if (href === "body") {
+                                    e.preventDefault();
+                                    scrollTo("body");
+                                  } else {
+                                    e.preventDefault();
+                                    scrollTo(href);
+                                  }
+                                }}
+                                className="group inline-flex items-center gap-2 text-sm text-white/75 transition-colors hover:text-[#f4c889]"
+                              >
+                                <span className="h-1 w-1 rounded-full bg-[#d89b53] opacity-0 transition-all group-hover:opacity-100" />
+                                {name}
+                              </a>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 ))}
