@@ -7,17 +7,21 @@ const fmt = "auto=format&fit=crop&q=75";
 //   rose: "/images/pouch-rose.png"
 // ---------------------------------------------------------------
 export const POUCH_IMAGES = {
-  rose: null,
-  choco: null,
-  haldi: null,
-  makhana: null,
+  rose: "/images/pouch-rose.png",
+  choco: "/images/pouch-choco.png",
+  haldi: "/images/pouch-haldi.png",
+  makhana: "/images/pouch-makhana.png",
 };
 
-// Real logo: "/images/logo.png". null = text logo.
-export const LOGO = null;
+// Real logo
+export const LOGO = "/images/mixxit-logo.jpeg";
 
-// Unsplash placeholders (baad me apni photos se replace kar dena)
+// Real product photos (local assets)
 export const PHOTOS = {
+  rose: "/images/rose-patel-premix.jpeg",
+  choco: "/images/choko-dryfruit-premix.jpeg",
+  haldi: "/images/haldi-premix.jpeg",
+  makhana: "/images/makhna-premix.jpeg",
   mango: `${U}/photo-1584127709733-6899e4874b5b?w=640&${fmt}`,
   strawberry: `${U}/photo-1464566711850-0331b2a43050?w=640&${fmt}`,
   pineapple: `${U}/photo-1553907761-9b2f7e7c8c4a?w=640&${fmt}`,

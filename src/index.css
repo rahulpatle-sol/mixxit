@@ -18,6 +18,7 @@ body {
   background: var(--color-paper);
   color: var(--color-brown);
   font-family: var(--font-sans);
+  font-display: swap;
 }
 
 /* clip (hidden nahi): hidden se pin/sticky toot sakta hai */

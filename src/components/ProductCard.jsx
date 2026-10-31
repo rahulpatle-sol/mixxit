@@ -35,7 +35,7 @@ export default function ProductCard({ p, className = "" }) {
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
               className="h-full w-full overflow-hidden rounded-t-[999px]"
             >
-              <Img src={photo} alt={p.name} className="h-full w-full object-cover" />
+              <Img src={photo} alt={p.name} className="h-full w-full object-cover" width={640} height={800} />
             </motion.div>
           ) : (
             <motion.div

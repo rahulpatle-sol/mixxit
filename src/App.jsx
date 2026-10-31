@@ -5,7 +5,6 @@ import { StoreProvider } from "./store";
 import Navbar from "./components/Navbar";
 import Stage from "./components/Stage";
 import ShopSection from "./components/ShopSection";
-import FruitSection from "./components/FruitSection";
 import StoryReveal from "./components/StoryReveal";
 import FaqSection from "./components/FaqSection";
 import Footer from "./components/Footer";
